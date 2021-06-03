@@ -17,8 +17,6 @@
 
       <v-responsive max-width="200">
         <v-btn
-          :loading="loading3"
-          :disabled="loading3"
           color="blue-grey"
           class="ma-2 white--text"
           @click="rightDrawer = true"

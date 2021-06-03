@@ -7,6 +7,7 @@
         >
         <v-select
           :items="methodItems"
+          v-model="method"
           label="METHOD"
           color="success"
         ></v-select>
@@ -16,7 +17,7 @@
             cols="8"
         >
           <v-text-field
-            v-model="message1"
+            v-model="url"
             label="URL"
             color="success"
             clearable
@@ -28,11 +29,9 @@
         >
             <v-btn
             class="ma-2"
-            :loading="loading2"
-            :disabled="loading2"
             color="success"
             large
-            @click="loader"
+            @click="requestApi()"
             >
             Send
             </v-btn>
@@ -68,15 +67,16 @@
         <v-tab-item>
             <v-card
             flat
+            max-height="250px"
             >
-            <v-card-text>1234</v-card-text>
+                <Header />
             </v-card>
         </v-tab-item>
         <v-tab-item>
             <v-card
             flat
             >
-            <v-card-text>1234</v-card-text>
+                <Body />
             </v-card>
         </v-tab-item>
         </v-tabs-items>
@@ -103,21 +103,18 @@
                 <v-card
                 flat
                 >
-                    <Parameter/>
                 </v-card>
             </v-tab-item>
             <v-tab-item>
                 <v-card
                 flat
                 >
-                <v-card-text>1234</v-card-text>
                 </v-card>
             </v-tab-item>
             <v-tab-item>
                 <v-card
                 flat
                 >
-                <v-card-text>1234</v-card-text>
                 </v-card>
             </v-tab-item>
         </v-tabs-items>
@@ -127,11 +124,16 @@
 
 <script>
   import Parameter from '@/components/Parameter';
+  import Header from './Header.vue';
+  import Body from './Body.vue';
+  import Request from '@/Request'
 
   export default {
     name: 'Request',
     components: {
         Parameter,
+        Header,
+        Body
     },
     data () {
         return {
@@ -146,7 +148,29 @@
             responseTabs: [
             'body', 'cookies', 'header',
             ],
+            method: null,
+            url: null,
+            body: null,
+            param: null,
+            header: null,
+            response: null,
         }
     },
+    methods: {
+        requestApi()  {
+            let self = this
+
+            return Request({
+                method: self.method,
+                url: self.url,
+                data: self.body,
+                params: self.param,
+                headers: self.header
+            }).then((response) =>{
+                let result = response.data;
+                response = result;
+            });
+        },
+    }
   }
 </script>

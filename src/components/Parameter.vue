@@ -9,6 +9,7 @@
                             icon
                             color="success"
                             right
+                            @click="createData()"
                         >
                             <v-icon dark>
                                 mdi-plus
@@ -20,6 +21,7 @@
                             x-small
                             icon
                             color="error"
+                            @click="removeData()"
                         >
                             <v-icon dark>
                                 mdi-minus
@@ -28,10 +30,10 @@
                     </v-list-item>
                 </v-list>
             </v-col>
-            <v-col>
+            <v-col cols="11">
                 <Grid
-                    id="Scheduler_schedulerDtlGrid"
-                    ref="schedulerDtlGrid"
+                    id="Parameter_parameterGrid"
+                    ref="parameterGrid"
                     :bodyHeight="150"
                     :data="gridOpts.data"
                     :columns="gridOpts.columns"
@@ -39,6 +41,8 @@
                     :summary="gridOpts.summary"
                     v-model="selectedRow"
                 ></Grid>    
+            </v-col>
+            <v-col md="0">  
             </v-col>
         </v-row>
     </v-container>
@@ -55,7 +59,7 @@
     created(){
       let self = this;
       self.gridOpts = {
-        data: [{jobDataKey:'111', jobDataValue: '222'}],          
+        data: [],          
         rowHeaders: [{
           type: 'checkbox',
           header: '<span/>',
@@ -66,14 +70,21 @@
         columns: [
           {
             header: "KEY",
-            name: "jobDataKey",
+            name: "key",
             align: "left",
             minWidth: 130,
             editor: 'text'
           },
           {
             header: "VALUE",
-            name: "jobDataValue",
+            name: "value",
+            align: "left",
+            minWidth: 130,
+            editor: 'text'
+          },
+          {
+            header: "DESCRIPTION",
+            name: "description",
             align: "left",
             minWidth: 130,
             editor: 'text'
@@ -84,49 +95,23 @@
     data () {
       return {
         gridOpts: {},
-        desserts: [
-          {
-            name: 'Frozen Yogurt',
-            calories: 159,
-          },
-          {
-            name: 'Ice cream sandwich',
-            calories: 237,
-          },
-          {
-            name: 'Eclair',
-            calories: 262,
-          },
-          {
-            name: 'Cupcake',
-            calories: 305,
-          },
-          {
-            name: 'Gingerbread',
-            calories: 356,
-          },
-          {
-            name: 'Jelly bean',
-            calories: 375,
-          },
-          {
-            name: 'Lollipop',
-            calories: 392,
-          },
-          {
-            name: 'Honeycomb',
-            calories: 408,
-          },
-          {
-            name: 'Donut',
-            calories: 452,
-          },
-          {
-            name: 'KitKat',
-            calories: 518,
-          },
-        ],
+        selectedRow: { jobDataKey: null }, // 선택된행
       }
     },
+    methods: {
+      createData() {
+          let self = this,
+            parameterGrid = self.$refs.parameterGrid;
+
+          let data = {key:"", value: ""};
+          parameterGrid.prependRow(data);
+      },
+
+      removeData() {
+          let self = this,
+            parameterGrid = self.$refs.parameterGrid;
+          parameterGrid.removeRow(self.selectedRow.rowKey);
+      },
+    }
   }
 </script>
