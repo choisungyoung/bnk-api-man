@@ -15,24 +15,32 @@
     >
       <v-spacer></v-spacer>
 
-      <v-responsive max-width="156">
-        <v-text-field
-          dense
-          flat
-          hide-details
-          rounded
-          solo-inverted
-        ></v-text-field>
+      <v-responsive max-width="200">
+        <v-btn
+          :loading="loading3"
+          :disabled="loading3"
+          color="blue-grey"
+          class="ma-2 white--text"
+          @click="rightDrawer = true"
+        >
+          global data
+          <v-icon
+            right
+            dark
+          >
+            mdi-table
+          </v-icon>
+        </v-btn>
       </v-responsive>
     </v-app-bar>
 
     <v-navigation-drawer
-      v-model="drawer"
+      v-model="leftDrawer"
       app
       width="300"
     >
       <v-navigation-drawer
-        v-model="drawer"
+        v-model="leftDrawer"
         absolute
         color="grey lighten-3"
         mini-variant
@@ -76,39 +84,91 @@
       </v-list>
     </v-navigation-drawer>
 
-
-    <v-main>
-      <!--  -->
-    </v-main>
-
-    <v-footer
+    <v-navigation-drawer
+      v-model="rightDrawer"
       app
-      color="transparent"
-      height="72"
-      inset
+      clipped
+      right
+      absolute
+      temporary
+      width="40%"
     >
-      <v-text-field
-        background-color="grey lighten-1"
-        dense
-        flat
-        hide-details
-        rounded
-        solo
-      ></v-text-field>
-    </v-footer>
+      <v-list>
+        <v-list-item link>
+          <v-list-item-content>
+            <v-list-item-title class="text-h5">
+              GLOBAL DATA
+            </v-list-item-title>
+            <v-list-item-subtitle class="text-h6">Group Name</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <v-divider></v-divider>
+        <v-tabs
+        v-model="globalDataTab"
+        color="success"
+        >
+            <v-tab
+                v-for="item in globalDataTabs"
+                :key="item"
+            >
+                {{ item }}
+            </v-tab>
+        </v-tabs>
+
+        <v-tabs-items v-model="globalDataTab">
+            <v-tab-item>
+                <v-card
+                flat
+                >
+                    <Parameter/>
+                </v-card>
+            </v-tab-item>
+            <v-tab-item>
+                <v-card
+                flat
+                >
+                <v-card-text>1234</v-card-text>
+                </v-card>
+            </v-tab-item>
+            <v-tab-item>
+                <v-card
+                flat
+                >
+                <v-card-text>1234</v-card-text>
+                </v-card>
+            </v-tab-item>
+        </v-tabs-items>
+    </v-navigation-drawer>
+
+    <v-main style="background:#FCFCFC">
+      <!--  --> 
+      <Request />
+    </v-main>
   </v-app>
 </template>
 
 <script>
 
+import Request from '@/components/Request'
+import Parameter from '@/components/Parameter'
+
 export default {
   name: 'App',
 
   components: {
+    Request,
+    Parameter,
   },
 
   data: () => ({
-    //
+    leftDrawer: true,
+    rightDrawer: false,
+    group: null,
+    globalDataTab: null,
+    globalDataTabs: [
+      'params', 'header', 'body',
+    ],
   }),
 };
 </script>
