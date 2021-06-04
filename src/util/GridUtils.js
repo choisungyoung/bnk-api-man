@@ -100,7 +100,7 @@ export function CustomSingleCheckbox(props){
                         rowEl.querySelector('input').checked = false;
                     }  
                 }
-            }
+            } 
         }
         grid.setValue(rowKey, columnInfo.name, el.checked);
     });

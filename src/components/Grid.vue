@@ -1,275 +1,275 @@
 <template>
-    <div>
-        <!--
+  <div>
+    <!--
             heightResizable=true
         -->
-        <Grid
-            ref="tuiGrid"
-            rowHeight="auto"
-            :data="data"
-            :rowHeaders="rowHeaders"
-            :columns="columns"
-            :columnOptions="columnOptions"
-            :treeColumnOptions="treeColumnOptions"
-            :summary="summary"
-            :theme="theme"
-            :language="language"
-            :bodyHeight="bodyHeight"
-            :showDummyRows="true"
-            @click="onClick"
-            @check="onCheck"
-            @checkAll="onCheckAll"
-            @uncheck="onUncheck"
-            @uncheckAll="onUncheckAll"
-            @expand="onExpand"
-            @collapse="onCollapse"
-        >    
-        </Grid>
-    </div>
+    <Grid
+      ref="tuiGrid"
+      rowHeight="auto"
+      :data="data"
+      :rowHeaders="rowHeaders"
+      :columns="columns"
+      :columnOptions="columnOptions"
+      :treeColumnOptions="treeColumnOptions"
+      :summary="summary"
+      :theme="theme"
+      :language="language"
+      :bodyHeight="bodyHeight"
+      :showDummyRows="true"
+      @click="onClick"
+      @check="onCheck"
+      @checkAll="onCheckAll"
+      @uncheck="onUncheck"
+      @uncheckAll="onUncheckAll"
+      @expand="onExpand"
+      @collapse="onCollapse"
+    >
+    </Grid>
+  </div>
 </template>
 
 <script>
-import { Grid } from '@toast-ui/vue-grid';
-import 'tui-grid/dist/tui-grid.css';
+import { Grid } from "@toast-ui/vue-grid";
+import "tui-grid/dist/tui-grid.css";
 
 export default {
-    components: {
-        Grid
+  components: {
+    Grid,
+  },
+  data() {
+    return {
+      language: "ko",
+      selectedCSS: "tui-grid-cell-checked-row",
+    };
+  },
+  props: {
+    theme: {
+      type: [String],
+      default: "clean",
     },
-    data() {
+    data: {
+      type: [Array, Object],
+      required: true,
+    },
+    columns: {
+      type: [Array],
+      required: true,
+    },
+    summary: {
+      type: [Object],
+      default: () => {
+        return {};
+      },
+    },
+    rowHeaders: {
+      type: [Array],
+      default: () => {
+        return [];
+      },
+    },
+    treeColumnOptions: {
+      type: [Object],
+      default: () => {
         return {
-            language: 'ko',
-            selectedCSS: 'tui-grid-cell-checked-row'
-        }
+          resizable: true,
+        };
+      },
     },
-    props: {
-        theme: {
-            type: [String],
-            default: 'clean'
-        },
-        data: {
-            type: [Array, Object],
-            required: true
-        },
-        columns: {
-            type: [Array],
-            required: true
-        },
-        summary: {
-            type: [Object],
-            default: () =>{
-                return {};
-            }
-        },
-        rowHeaders: {
-            type: [Array],
-            default: () =>{
-                return [];
-            }
-        },
-        treeColumnOptions: {
-            type: [Object],
-            default: () =>{
-                return {
-                    resizable: true
-                };
-            }
-        },
-        columnOptions: {
-            type: [Object],
-            default: () =>{
-                return {
-                    resizable: true
-                };
-            }
-        },
-        bodyHeight: {
-            type: [Number, String],
-            default: 300
-        }
+    columnOptions: {
+      type: [Object],
+      default: () => {
+        return {
+          resizable: true,
+        };
+      },
     },
-    methods: {
-        setColumns(columns) {
-            let grid = this.$refs.tuiGrid;
-            grid.invoke('setColumns', columns);
-        },
-        
-        getData() {
-            let grid = this.$refs.tuiGrid;
-            return grid.invoke('getData');
-        },
+    bodyHeight: {
+      type: [Number, String],
+      default: 300,
+    },
+  },
+  methods: {
+    setColumns(columns) {
+      let grid = this.$refs.tuiGrid;
+      grid.invoke("setColumns", columns);
+    },
 
-        setData(dataList){
-            let grid = this.$refs.tuiGrid;
+    getData() {
+      let grid = this.$refs.tuiGrid;
+      return grid.invoke("getData");
+    },
 
-            grid.invoke('clear');
-            grid.invoke('resetData', dataList);
-        },
+    setData(dataList) {
+      let grid = this.$refs.tuiGrid;
 
-        clearData(){
-            let grid = this.$refs.tuiGrid;
+      grid.invoke("clear");
+      grid.invoke("resetData", dataList);
+    },
 
-            grid.invoke('clear');
-        },
+    clearData() {
+      let grid = this.$refs.tuiGrid;
 
-        refreshLayout(){
-            let grid = this.$refs.tuiGrid;
+      grid.invoke("clear");
+    },
 
-            grid.invoke('refreshLayout');
-        },
+    refreshLayout() {
+      let grid = this.$refs.tuiGrid;
 
-        getCreatedRows(){
-            let grid = this.$refs.tuiGrid;
+      grid.invoke("refreshLayout");
+    },
 
-            return grid.invoke('getModifiedRows', {ignoredColumns : ['_children', '_attributes']}).createdRows;
-        },
+    getCreatedRows() {
+      let grid = this.$refs.tuiGrid;
 
-        getUpdatedRows(){
-            let grid = this.$refs.tuiGrid;
+      return grid.invoke("getModifiedRows", {
+        ignoredColumns: ["_children", "_attributes"],
+      }).createdRows;
+    },
 
-            return grid.invoke('getModifiedRows', {ignoredColumns : ['_children', '_attributes']}).updatedRows;
-        },
+    getUpdatedRows() {
+      let grid = this.$refs.tuiGrid;
 
-        getDeletedRows(){
-            let grid = this.$refs.tuiGrid;
+      return grid.invoke("getModifiedRows", {
+        ignoredColumns: ["_children", "_attributes"],
+      }).updatedRows;
+    },
 
-            return grid.invoke('getModifiedRows', {ignoredColumns : ['_children', '_attributes']}).deletedRows;
-        },
+    getDeletedRows() {
+      let grid = this.$refs.tuiGrid;
 
-        prependRow(row, options){
-            let grid = this.$refs.tuiGrid;
+      return grid.invoke("getModifiedRows", {
+        ignoredColumns: ["_children", "_attributes"],
+      }).deletedRows;
+    },
 
-            grid.invoke('prependRow', row, options);
-        },
+    prependRow(row, options) {
+      let grid = this.$refs.tuiGrid;
 
-        appendRow(row, options){
-            let grid = this.$refs.tuiGrid;
+      grid.invoke("prependRow", row, options);
+    },
 
-            grid.invoke('appendRow', row, options);
-        },
+    appendRow(row, options) {
+      let grid = this.$refs.tuiGrid;
 
-        appendRows(data){
-            let grid = this.$refs.tuiGrid;
+      grid.invoke("appendRow", row, options);
+    },
 
-            grid.invoke('appendRows', data);
-        },
+    appendRows(data) {
+      let grid = this.$refs.tuiGrid;
 
-        appendTreeRow(row, options){
-            let grid = this.$refs.tuiGrid;
+      grid.invoke("appendRows", data);
+    },
 
-            grid.invoke('appendTreeRow', row, options);
-        },
+    appendTreeRow(row, options) {
+      let grid = this.$refs.tuiGrid;
 
-        removeRow(rowKey, options) {
-            let grid = this.$refs.tuiGrid;
-            grid.invoke('removeRow', rowKey, options);
-        },
-        removeRowClassName(rowKey, className) {
-            let grid = this.$refs.tuiGrid;
-            grid.invoke('removeRowClassName', rowKey, className);
-        },
-        removeTreeRow(rowKey) {
-            let grid = this.$refs.tuiGrid;
-            grid.invoke('removeTreeRow', rowKey);
-        },
+      grid.invoke("appendTreeRow", row, options);
+    },
 
-        onClick(props){
-            let grid = props.instance,
-                rowKey = props.rowKey,
-                columnName = '_checked';
+    removeRow(rowKey, options) {
+      let grid = this.$refs.tuiGrid;
+      grid.invoke("removeRow", rowKey, options);
+    },
+    removeRowClassName(rowKey, className) {
+      let grid = this.$refs.tuiGrid;
+      grid.invoke("removeRowClassName", rowKey, className);
+    },
+    removeTreeRow(rowKey) {
+      let grid = this.$refs.tuiGrid;
+      grid.invoke("removeTreeRow", rowKey);
+    },
 
-            // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
-            if(columnName != props.columnName
-            && grid.getElement(rowKey, '_checked')){
-                let event = new Event('change');
-                let input = grid.getElement(rowKey, '_checked').querySelector('input');
-                input.checked = true;
-                input.dispatchEvent(event);
-            }
-        },
-        
-        onCheck(props){
-            let self = this,
-                grid = props.instance;
+    onClick(props) {
+      let grid = props.instance,
+        rowKey = props.rowKey,
+        columnName = "_checked";
 
-            grid.addRowClassName(props.rowKey, self.selectedCSS);
+      // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
+      if (
+        columnName != props.columnName &&
+        grid.getElement(rowKey, "_checked")
+      ) {
+        let event = new Event("change");
+        let input = grid.getElement(rowKey, "_checked").querySelector("input");
+        input.checked = true;
+        input.dispatchEvent(event);
+      }
+    },
 
-            let checkedRows = grid.getCheckedRows();
-            if(checkedRows.length === 1){
-                self.$emit('input', checkedRows[0]); 
-                self.$emit('check', checkedRows[0]); 
-            }
-            else{
-                self.$emit('input', checkedRows); 
-                self.$emit('check', checkedRows[0]); 
-            }
-        },
+    onCheck(props) {
+      let self = this,
+        grid = props.instance;
 
-        onCheckAll(props){
-            let self = this,
-                grid = props.instance;
+      grid.addRowClassName(props.rowKey, self.selectedCSS);
 
-            for(let key of grid.getCheckedRowKeys()){
-                grid.addRowClassName(key, self.selectedCSS);
-            }
-        },
+      let checkedRows = grid.getCheckedRows();
+      if (checkedRows.length === 1) {
+        self.$emit("input", checkedRows[0]);
+        self.$emit("check", checkedRows[0]);
+      } else {
+        self.$emit("input", checkedRows);
+        self.$emit("check", checkedRows[0]);
+      }
+    },
 
-        onUncheck(props){
-            let self = this,
-                grid = props.instance,
-                rowKey = props.rowKey;
+    onCheckAll(props) {
+      let self = this,
+        grid = props.instance;
 
-            grid.removeRowClassName(rowKey, self.selectedCSS);
-                        
-            let checkedRows = grid.getCheckedRows();
-            if(checkedRows.length === 1){
-                self.$emit('input', checkedRows[0]); 
-            }
-            else{
-                self.$emit('input', checkedRows); 
-            }
-        },
+      for (let key of grid.getCheckedRowKeys()) {
+        grid.addRowClassName(key, self.selectedCSS);
+      }
+    },
 
-        onUncheckAll(props){
-            let self = this,
-                grid = props.instance;
+    onUncheck(props) {
+      let self = this,
+        grid = props.instance,
+        rowKey = props.rowKey;
 
-            for(let key = 0;  key < grid.getRowCount(); key++){
-                grid.removeRowClassName(key, self.selectedCSS);
-            }
-        },
+      grid.removeRowClassName(rowKey, self.selectedCSS);
 
-        blur() {
-            let grid = this.$refs.tuiGrid;
-            return grid.invoke('blur');
-        },
+      let checkedRows = grid.getCheckedRows();
+      if (checkedRows.length === 1) {
+        self.$emit("input", checkedRows[0]);
+      } else {
+        self.$emit("input", checkedRows);
+      }
+    },
 
-        onExpand(){
-        },
-          
-        onCollapse(){
-        },
+    onUncheckAll(props) {
+      let self = this,
+        grid = props.instance;
 
-        onDebuggerMethod(){
-            
-        },
+      for (let key = 0; key < grid.getRowCount(); key++) {
+        grid.removeRowClassName(key, self.selectedCSS);
+      }
+    },
 
-        getRootElement() {
-            return this.$ref.tuiGrid;
-        },
+    blur() {
+      let grid = this.$refs.tuiGrid;
+      return grid.invoke("blur");
+    },
 
-        invoke(methodName, ...args){
-            let grid = this.$refs.tuiGrid,
-                gridInstance = grid.gridInstance;
-            if(gridInstance[methodName] === 'function'){
-                return grid.invoke(methodName, ...args);
-            }
-            return null;
-        },
-    }
-}
+    onExpand() {},
+
+    onCollapse() {},
+
+    onDebuggerMethod() {},
+
+    getRootElement() {
+      return this.$ref.tuiGrid;
+    },
+
+    invoke(methodName, ...args) {
+      let grid = this.$refs.tuiGrid,
+        gridInstance = grid.gridInstance;
+      if (gridInstance[methodName] === "function") {
+        return grid.invoke(methodName, ...args);
+      }
+      return null;
+    },
+  },
+};
 </script>
 
-<style>
-
-</style>
+<style></style>
