@@ -83,6 +83,8 @@
       absolute
       temporary
       width="40%"
+      style="z-index: 999;"
+      @input="saveGlobalData"
     >
       <v-list>
         <v-list-item link>
@@ -106,17 +108,26 @@
       <v-tabs-items v-model="globalDataTab">
         <v-tab-item>
           <v-card flat>
-            <Parameter />
+            <Parameter 
+              ref="globalParameter"
+              :data="globalParameter"
+              :height="300"
+              :dvcd="'edit'"/>
           </v-card>
         </v-tab-item>
         <v-tab-item>
           <v-card flat>
-            <v-card-text>1234</v-card-text>
+            <Header
+              ref="globalHeader"
+              :data="globalHeader"
+              :height="300"
+              :dvcd="'edit'"
+            />
           </v-card>
         </v-tab-item>
         <v-tab-item>
           <v-card flat>
-            <v-card-text>1234</v-card-text>
+            <Body ref="globalBody" v-model="globalBody" :height="300" />
           </v-card>
         </v-tab-item>
       </v-tabs-items>
@@ -132,7 +143,10 @@
 <script>
 import Request from "@/components/Request";
 import Parameter from "@/components/Parameter";
+import Header from "@/components/Header";
+import Body from "@/components/Body";
 import GroupList from "@/components/GroupList";
+import {initTable, deleteAllGlobalData} from "@/util/DbAccessUtils";
 
 export default {
   name: "App",
@@ -140,6 +154,8 @@ export default {
   components: {
     Request,
     Parameter,
+    Header,
+    Body,
     GroupList,
   },
 
@@ -149,6 +165,22 @@ export default {
     group: null,
     globalDataTab: null,
     globalDataTabs: ["params", "header", "body"],
+    globalParameter: [],
+    globalHeader: [],
+    globalBody: "",
   }),
+  
+  mounted() {
+    initTable();
+  },
+
+  methods: {
+    saveGlobalData : function(isOpening) {
+      if(!isOpening) {
+        // 닫힐 경우 저장
+        deleteAllGlobalData();
+      }
+    }
+  }
 };
 </script>

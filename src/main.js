@@ -15,8 +15,4 @@ new Vue({
   vuetify,
   render: h => h(App)
 }).$mount('#app')
-/*
-const sqlite3 = require('sqlite3').verbose();
 
-const db = new sqlite3.Database('./db/moneynode.db');
-*/

@@ -36,9 +36,9 @@
           <v-card flat max-height="250px">
             <Parameter
               ref="requestParameter"
-              :data="param"
+              :data="requestParameter"
               :height="180"
-              :dvcd="'request'"
+              :dvcd="'edit'"
             />
           </v-card>
         </v-tab-item>
@@ -46,9 +46,9 @@
           <v-card flat max-height="250px">
             <Header
               ref="requestHeader"
-              :data="param"
+              :data="requestHeader"
               :height="180"
-              :dvcd="'request'"
+              :dvcd="'edit'"
             />
           </v-card>
         </v-tab-item>
@@ -77,9 +77,8 @@
           <v-card flat>
             <Parameter
               ref="responseCookie"
-              :data="param"
+              :data="responseCookie"
               :height="180"
-              :dvcd="'response'"
           /></v-card>
         </v-tab-item>
         <v-tab-item eager>
@@ -88,7 +87,6 @@
               ref="responseHeader"
               v-model="responseHeader"
               :height="230"
-              :dvcd="'response'"
             />
           </v-card>
         </v-tab-item>
@@ -123,12 +121,12 @@ export default {
       requestBody:
         '{"userId":"9999999", "password":"chrldkagh1!","cmgrpCd":"01"}',
       requestHeader: {},
-      param: {},
+      requestParameter: {},
 
       /* RESPONSE */
       responseBody: "",
       responseHeader: {},
-      cookie: {},
+      responseCookie: {},
     };
   },
   mounted() {},

@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="1" v-show="dvcd == 'request'">
+      <v-col cols="1" v-show="dvcd == 'edit'">
         <v-list>
           <v-list-item dense>
             <v-btn x-small icon color="success" right @click="createData()">
@@ -23,7 +23,7 @@
         <Grid
           id="Header_headerGrid"
           ref="headerGrid"
-          :bodyHeight="150"
+          :bodyHeight="height"
           :data="gridOpts.data"
           :columns="gridOpts.columns"
           :rowHeaders="gridOpts.rowHeaders"
@@ -46,7 +46,7 @@ export default {
   props: ["data", "height", "dvcd"],
   computed: {
     setCol() {
-      if (this.dvcd == "request") {
+      if (this.dvcd == "edit") {
         return 11;
       } else {
         return 12;
