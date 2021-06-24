@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="1">
+      <v-col cols="1" v-show="dvcd == 'request'">
         <v-list>
           <v-list-item dense>
             <v-btn x-small icon color="success" right @click="createData()">
@@ -19,7 +19,7 @@
           </v-list-item>
         </v-list>
       </v-col>
-      <v-col cols="11">
+      <v-col :cols="setCol">
         <Grid
           id="Header_headerGrid"
           ref="headerGrid"
@@ -43,9 +43,20 @@ export default {
   components: {
     Grid,
   },
-  props: ["data", "height"],
+  props: ["data", "height", "dvcd"],
+  computed: {
+    setCol() {
+      if (this.dvcd == "request") {
+        return 11;
+      } else {
+        return 12;
+      }
+    },
+  },
   created() {
-    let self = this;
+    let self = this,
+      editorVal = self.dvcd === "request" ? "text" : null;
+
     self.gridOpts = {
       data: [],
       rowHeaders: [
@@ -63,21 +74,21 @@ export default {
           name: "key",
           align: "left",
           minWidth: 130,
-          editor: "text",
+          editor: editorVal,
         },
         {
           header: "VALUE",
           name: "value",
           align: "left",
           minWidth: 130,
-          editor: "text",
+          editor: editorVal,
         },
         {
           header: "DESCRIPTION",
           name: "description",
           align: "left",
           minWidth: 130,
-          editor: "text",
+          editor: editorVal,
         },
       ],
     };
@@ -88,6 +99,7 @@ export default {
       selectedRow: { jobDataKey: null }, // 선택된행
     };
   },
+  mounted() {},
   methods: {
     getHeader() {
       let self = this,
@@ -98,6 +110,15 @@ export default {
         return null;
       }
       return self.getGridDataToJsonData(gridDataList);
+    },
+    setHeader(jsonData) {
+      let self = this,
+        headerGrid = self.$refs.headerGrid;
+
+      if (jsonData) {
+        headerGrid.setData(self.getJsonDataToGridData(jsonData));
+        headerGrid.refreshLayout();
+      }
     },
 
     createData() {
@@ -114,6 +135,12 @@ export default {
       headerGrid.removeRow(self.selectedRow.rowKey);
     },
 
+    refreshLayout() {
+      let self = this,
+        headerGrid = self.$refs.headerGrid;
+      headerGrid.refreshLayout(); // grid 화면 reload
+    },
+
     getGridDataToJsonData(gridDataList) {
       var jsonData = {};
 
@@ -124,13 +151,13 @@ export default {
       return jsonData;
     },
 
-    getJsonDataToGridData(jobDataMap) {
+    getJsonDataToGridData(jsonData) {
       var gridDataList = [];
 
-      for (var jobDataKey in jobDataMap) {
+      for (var jsonKey in jsonData) {
         gridDataList.push({
-          jobDataKey: jobDataKey,
-          jobDataValue: jobDataMap[jobDataKey],
+          key: jsonKey,
+          value: jsonData[jsonKey],
         });
       }
 

@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="1">
+      <v-col cols="1" v-show="dvcd == 'request'">
         <v-list>
           <v-list-item dense>
             <v-btn x-small icon color="success" right @click="createData()">
@@ -19,7 +19,7 @@
           </v-list-item>
         </v-list>
       </v-col>
-      <v-col cols="11">
+      <v-col :cols="setCol">
         <Grid
           id="Parameter_parameterGrid"
           ref="parameterGrid"
@@ -43,7 +43,16 @@ export default {
   components: {
     Grid,
   },
-  props: ["data", "height"],
+  props: ["data", "height", "dvcd"],
+  computed: {
+    setCol() {
+      if (this.dvcd == "request") {
+        return 11;
+      } else {
+        return 12;
+      }
+    },
+  },
   created() {
     let self = this;
     self.gridOpts = {
@@ -113,6 +122,12 @@ export default {
       parameterGrid.removeRow(self.selectedRow.rowKey);
     },
 
+    refreshLayout() {
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid;
+      parameterGrid.refreshLayout(); // grid 화면 reload
+    },
+
     getGridDataToJsonData(gridDataList) {
       var jsonData = {};
 
@@ -123,13 +138,14 @@ export default {
       return jsonData;
     },
 
-    getJsonDataToGridData(jobDataMap) {
+    getJsonDataToGridData(jsonData) {
       var gridDataList = [];
 
-      for (var jobDataKey in jobDataMap) {
+      for (var jsonKey in jsonData) {
         gridDataList.push({
-          jobDataKey: jobDataKey,
-          jobDataValue: jobDataMap[jobDataKey],
+          key: jsonKey,
+          value: jsonData[jsonKey],
+          description: "123",
         });
       }
 

@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row class="text-center">
+    <v-row class="text-center" id="main-content">
       <v-col class="d-flex" cols="2">
         <v-select
           :items="methodItems"
@@ -26,23 +26,33 @@
 
     <v-card elevation="2" height="300px">
       <v-tabs v-model="requestTab" color="success">
-        <v-tab v-for="item in requestTabs" :key="item">
+        <v-tab v-for="item in requestTabs" :key="item" @click="refreshTabs()">
           {{ item }}
         </v-tab>
       </v-tabs>
 
       <v-tabs-items v-model="requestTab">
-        <v-tab-item>
+        <v-tab-item eager>
           <v-card flat max-height="250px">
-            <Parameter ref="requestParameter" :data="param" :height="180" />
+            <Parameter
+              ref="requestParameter"
+              :data="param"
+              :height="180"
+              :dvcd="'request'"
+            />
           </v-card>
         </v-tab-item>
-        <v-tab-item>
+        <v-tab-item eager>
           <v-card flat max-height="250px">
-            <Header ref="requestHeader" :data="param" :height="180" />
+            <Header
+              ref="requestHeader"
+              :data="param"
+              :height="180"
+              :dvcd="'request'"
+            />
           </v-card>
         </v-tab-item>
-        <v-tab-item>
+        <v-tab-item eager>
           <v-card flat>
             <Body ref="requestBody" v-model="requestBody" :height="180" />
           </v-card>
@@ -52,22 +62,35 @@
     <br />
     <v-card elevation="2" height="350px">
       <v-tabs v-model="responseTab" color="success">
-        <v-tab v-for="item in responseTabs" :key="item">
+        <v-tab v-for="item in responseTabs" :key="item" @click="refreshTabs()">
           {{ item }}
         </v-tab>
       </v-tabs>
 
       <v-tabs-items v-model="responseTab">
-        <v-tab-item>
+        <v-tab-item eager>
           <v-card flat>
             <Body ref="responseBody" v-model="responseBody" :height="230" />
           </v-card>
         </v-tab-item>
-        <v-tab-item>
-          <v-card flat> </v-card>
+        <v-tab-item eager>
+          <v-card flat>
+            <Parameter
+              ref="responseCookie"
+              :data="param"
+              :height="180"
+              :dvcd="'response'"
+          /></v-card>
         </v-tab-item>
-        <v-tab-item>
-          <v-card flat> </v-card>
+        <v-tab-item eager>
+          <v-card flat>
+            <Header
+              ref="responseHeader"
+              v-model="responseHeader"
+              :height="230"
+              :dvcd="'response'"
+            />
+          </v-card>
         </v-tab-item>
       </v-tabs-items>
     </v-card>
@@ -95,18 +118,20 @@ export default {
       responseTab: null,
       responseTabs: ["body", "cookies", "header"],
       method: null,
-      url: null,
+      url: "http://localhost:9999/FW/api/v1/login",
       /* REQUEST */
-      requestBody: null,
-      requestHeader: null,
-      param: null,
+      requestBody:
+        '{"userId":"9999999", "password":"chrldkagh1!","cmgrpCd":"01"}',
+      requestHeader: {},
+      param: {},
 
       /* RESPONSE */
-      responseBody: null,
-      responseHeader: null,
-      cookie: null,
+      responseBody: "",
+      responseHeader: {},
+      cookie: {},
     };
   },
+  mounted() {},
   methods: {
     requestApi() {
       let self = this,
@@ -131,13 +156,31 @@ export default {
 
       return Request(requestData).then(
         (response) => {
-          let result = response.data;
-          self.responseBody = JSON.stringify(result);
+          let responseHeader = self.$refs.responseHeader;
+
+          self.responseBody = JSON.stringify(response.data);
+          self.responseHeader = response.headers;
+
+          responseHeader.setHeader(self.responseHeader);
+          // 쿠키 추가
         },
         (error) => {
           self.responseBody = JSON.stringify(error);
         }
       );
+    },
+    refreshTabs() {
+      let self = this,
+        requestParameter = self.$refs.requestParameter,
+        requestHeader = self.$refs.requestHeader,
+        responseCookie = self.$refs.responseCookie,
+        responseHeader = self.$refs.responseHeader;
+      setTimeout(() => {
+        requestParameter.refreshLayout();
+        requestHeader.refreshLayout();
+        responseCookie.refreshLayout();
+        responseHeader.refreshLayout();
+      }, 100);
     },
   },
 };

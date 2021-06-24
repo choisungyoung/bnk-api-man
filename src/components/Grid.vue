@@ -101,7 +101,6 @@ export default {
 
     setData(dataList) {
       let grid = this.$refs.tuiGrid;
-
       grid.invoke("clear");
       grid.invoke("resetData", dataList);
     },
