@@ -22,6 +22,7 @@ export const initTable = () => {
 }
 export const fineAllGlobalDataByType = (type) => {
   return new Promise((resolve) => {
+    debugger;
     let db = conn()
     let prepare = db.prepare('SELECT key, value, description FROM GLOBAL_DATA WHERE type=?')
     prepare.run(type)

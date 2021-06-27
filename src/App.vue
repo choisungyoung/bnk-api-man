@@ -38,7 +38,8 @@
       </v-responsive>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="leftDrawer" app width="350">
+    <v-navigation-drawer v-model="leftDrawer" app width="350" 
+      style="z-index: 998;">
       <v-navigation-drawer
         v-model="leftDrawer"
         absolute
@@ -84,7 +85,7 @@
       temporary
       width="40%"
       style="z-index: 999;"
-      @input="saveGlobalData"
+      @input="inputEvent"
     >
       <v-list>
         <v-list-item link>
@@ -146,7 +147,7 @@ import Parameter from "@/components/Parameter";
 import Header from "@/components/Header";
 import Body from "@/components/Body";
 import GroupList from "@/components/GroupList";
-import {initTable, deleteAllGlobalData} from "@/util/DbAccessUtils";
+import {initTable, fineAllGlobalDataByType, saveGlobalData, deleteAllGlobalData} from "@/util/DbAccessUtils";
 
 export default {
   name: "App",
@@ -175,11 +176,23 @@ export default {
   },
 
   methods: {
-    saveGlobalData : function(isOpening) {
+    inputEvent : function(isOpening) {
       if(!isOpening) {
         // 닫힐 경우 저장
+        debugger;
         deleteAllGlobalData();
+        this.globalParameter.type = '01';
+        this.globalParameter.key = '00';
+        this.globalParameter.value = '11';
+        this.globalParameter.description = '222';
+        saveGlobalData(this.globalParameter);
+        fineAllGlobalDataByType('01');
       }
+    },
+
+    fineAllGlobalData : function(type) {
+      var result = fineAllGlobalDataByType(type);
+      console.log("result", result);
     }
   }
 };
