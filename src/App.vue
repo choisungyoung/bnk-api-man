@@ -147,7 +147,7 @@ import Parameter from "@/components/Parameter";
 import Header from "@/components/Header";
 import Body from "@/components/Body";
 import GroupList from "@/components/GroupList";
-import {initTable, fineAllGlobalDataByType, saveGlobalData, deleteAllGlobalData} from "@/util/DbAccessUtils";
+import {fineAllGlobalDataByType, saveGlobalData, deleteAllGlobalData} from "@/util/DbAccessUtils";
 
 export default {
   name: "App",
@@ -171,22 +171,22 @@ export default {
     globalBody: "",
   }),
   
-  mounted() {
-    initTable();
+  create() {
   },
 
   methods: {
     inputEvent : function(isOpening) {
       if(!isOpening) {
         // 닫힐 경우 저장
-        debugger;
-        deleteAllGlobalData();
         this.globalParameter.type = '01';
         this.globalParameter.key = '00';
         this.globalParameter.value = '11';
-        this.globalParameter.description = '222';
+        this.globalParameter.description = '444554';
+        
         saveGlobalData(this.globalParameter);
-        fineAllGlobalDataByType('01');
+        let result = fineAllGlobalDataByType('01');
+        console.log(result);
+        deleteAllGlobalData
       }
     },
 

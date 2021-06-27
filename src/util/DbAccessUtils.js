@@ -21,23 +21,26 @@ export const initTable = () => {
   })
 }
 export const fineAllGlobalDataByType = (type) => {
-  return new Promise((resolve) => {
-    debugger;
+  return new Promise((resolve, reject) => {
     let db = conn()
-    let prepare = db.prepare('SELECT key, value, description FROM GLOBAL_DATA WHERE type=?')
-    prepare.run(type)
-    prepare.finalize(err => {
-      if (!err) resolve()
+    debugger;
+    type;
+    db.all("SELECT type, key, value, description FROM GLOBAL_DATA WHERE type='"+type + "'" , (err, rows) => {
+      debugger;
+      if (err) reject(err)
+      resolve(rows || [])
     })
   })
 }
 
 export const saveGlobalData = (globalData) => {
   return new Promise((resolve) => {
+    debugger;
     let db = conn()
-    let prepare = db.prepare('REPLACE INTO GLOBAL_DATA (type, key, value, description) VALUES (?, ?, ?, ?)')
+    let prepare = db.prepare('INSERT INTO GLOBAL_DATA (type, key, value, description) VALUES (?, ?, ?, ?)')
     prepare.run(globalData.type, globalData.key, globalData.value, globalData.description)
     prepare.finalize(err => {
+      debugger;
       if (!err) resolve()
     })
   })
