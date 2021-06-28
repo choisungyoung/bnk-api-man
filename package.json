@@ -21,7 +21,10 @@
     "tui-grid": "^4.17.3",
     "vue": "^2.6.11",
     "vue-cookies": "^1.7.4",
-    "vuetify": "^2.4.0"
+    "vue-json-ui-editor": "^1.0.0",
+    "vue-json-viewer": "^2.2.19",
+    "vuetify": "^2.4.0",
+    "webpack-node-externals": "^2.5.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

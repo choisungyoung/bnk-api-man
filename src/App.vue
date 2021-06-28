@@ -38,8 +38,12 @@
       </v-responsive>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="leftDrawer" app width="350" 
-      style="z-index: 998;">
+    <v-navigation-drawer
+      v-model="leftDrawer"
+      app
+      width="350"
+      style="z-index: 998;"
+    >
       <v-navigation-drawer
         v-model="leftDrawer"
         absolute
@@ -101,22 +105,27 @@
       </v-list>
       <v-divider></v-divider>
       <v-tabs v-model="globalDataTab" color="success">
-        <v-tab v-for="item in globalDataTabs" :key="item">
+        <v-tab
+          v-for="item in globalDataTabs"
+          :key="item"
+          @click="refreshTabs()"
+        >
           {{ item }}
         </v-tab>
       </v-tabs>
 
       <v-tabs-items v-model="globalDataTab">
-        <v-tab-item>
+        <v-tab-item eager>
           <v-card flat>
-            <Parameter 
+            <Parameter
               ref="globalParameter"
               :data="globalParameter"
               :height="300"
-              :dvcd="'edit'"/>
+              :dvcd="'edit'"
+            />
           </v-card>
         </v-tab-item>
-        <v-tab-item>
+        <v-tab-item eager>
           <v-card flat>
             <Header
               ref="globalHeader"
@@ -126,7 +135,7 @@
             />
           </v-card>
         </v-tab-item>
-        <v-tab-item>
+        <v-tab-item eager>
           <v-card flat>
             <Body ref="globalBody" v-model="globalBody" :height="300" />
           </v-card>
@@ -147,7 +156,12 @@ import Parameter from "@/components/Parameter";
 import Header from "@/components/Header";
 import Body from "@/components/Body";
 import GroupList from "@/components/GroupList";
-import {fineAllGlobalDataByType, saveGlobalData, deleteAllGlobalData} from "@/util/DbAccessUtils";
+import Constants from "@/constants";
+import {
+  fineAllGlobalDataByType,
+  saveGlobalData,
+  deleteAllGlobalData,
+} from "@/util/DbAccessUtils";
 
 export default {
   name: "App",
@@ -166,34 +180,89 @@ export default {
     group: null,
     globalDataTab: null,
     globalDataTabs: ["params", "header", "body"],
-    globalParameter: [],
-    globalHeader: [],
+    globalParameter: {},
+    globalHeader: {},
     globalBody: "",
   }),
-  
-  create() {
-  },
+
+  mounted() {},
 
   methods: {
-    inputEvent : function(isOpening) {
-      if(!isOpening) {
+    inputEvent: function(isOpening) {
+      let refs = this.$refs,
+        globalParameter = refs.globalParameter,
+        globalHeader = refs.globalHeader,
+        globalBody = this.globalBody;
+
+      if (!isOpening) {
         // 닫힐 경우 저장
-        this.globalParameter.type = '01';
-        this.globalParameter.key = '00';
-        this.globalParameter.value = '11';
-        this.globalParameter.description = '444554';
-        
-        saveGlobalData(this.globalParameter);
-        let result = fineAllGlobalDataByType('01');
-        console.log(result);
-        deleteAllGlobalData
+        // 모두 지우고 3개 grid정보 저장
+        let globalData = {};
+        deleteAllGlobalData();
+
+        // grid 데이터 가져오기
+        if (globalParameter != null && globalParameter.getGridData() != null) {
+          globalData.parameter = globalParameter.getGridData();
+        }
+        if (globalHeader != null && globalHeader.getGridData() != null) {
+          globalData.header = globalHeader.getGridData();
+        }
+        if (globalBody != null && globalBody != "") {
+          globalData.body = globalBody;
+          var bodyData = {};
+          bodyData.value = globalData.body;
+          bodyData.type = Constants.DATA_TYPE.BODY;
+          console.log("saveBody", bodyData);
+          saveGlobalData(bodyData); // db 저장
+        }
+        // grid 데이터 db에 저장
+        if (globalData.parameter) {
+          for (var param of globalData.parameter) {
+            param.type = Constants.DATA_TYPE.PARAMETER;
+            console.log("saveParameter", param);
+            saveGlobalData(param);
+          }
+        }
+        if (globalData.header) {
+          for (var header of globalData.header) {
+            header.type = Constants.DATA_TYPE.HEADER;
+            console.log("saveHeader", header);
+            saveGlobalData(header);
+          }
+        }
+      } else {
+        // 열릴때 DB 데이터 로드
+        fineAllGlobalDataByType(Constants.DATA_TYPE.PARAMETER).then((res) => {
+          console.log("findParameter", res);
+          globalParameter.setGridData(res);
+        });
+        fineAllGlobalDataByType(Constants.DATA_TYPE.HEADER).then((res) => {
+          console.log("findHeader", res);
+          globalHeader.setGridData(res);
+        });
+        fineAllGlobalDataByType(Constants.DATA_TYPE.BODY).then((res) => {
+          console.log("findBody", res);
+          if (res && res.length > 0) {
+            this.$refs.globalBody.setBody(res[0].value);
+          }
+        });
       }
     },
 
-    fineAllGlobalData : function(type) {
+    fineAllGlobalData: function(type) {
       var result = fineAllGlobalDataByType(type);
       console.log("result", result);
-    }
-  }
+    },
+
+    refreshTabs() {
+      let self = this,
+        globalParameter = self.$refs.globalParameter,
+        globalHeader = self.$refs.globalHeader;
+      setTimeout(() => {
+        globalParameter.refreshLayout();
+        globalHeader.refreshLayout();
+      }, 100);
+    },
+  },
 };
 </script>

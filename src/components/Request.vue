@@ -75,10 +75,7 @@
         </v-tab-item>
         <v-tab-item eager>
           <v-card flat>
-            <Parameter
-              ref="responseCookie"
-              :data="responseCookie"
-              :height="180"
+            <Parameter ref="responseCookie" :data="responseCookie" :height="180"
           /></v-card>
         </v-tab-item>
         <v-tab-item eager>
@@ -100,6 +97,9 @@ import Parameter from "@/components/Parameter";
 import Header from "./Header.vue";
 import Body from "./Body.vue";
 import Request from "@/Request";
+import { fineAllGlobalDataByType } from "@/util/DbAccessUtils";
+import { convertGridDataToJsonData } from "@/util/GridUtils";
+import Constants from "@/constants";
 
 export default {
   name: "Request",
@@ -141,7 +141,7 @@ export default {
         method: self.method,
         url: self.url,
       };
-
+      // request grid 데이터 로드
       if (requestParameter != null && requestParameter.getParameter() != null) {
         requestData.params = requestParameter.getParameter();
       }
@@ -151,6 +151,21 @@ export default {
       if (requestBody != null && requestBody != "") {
         requestData.data = JSON.parse(requestBody);
       }
+
+      // global grid 데이터 로드
+      fineAllGlobalDataByType(Constants.DATA_TYPE.PARAMETER).then((res) => {
+        let globalParameter = convertGridDataToJsonData(res);
+        console.log("findParameter", globalParameter);
+      });
+      fineAllGlobalDataByType(Constants.DATA_TYPE.HEADER).then((res) => {
+        let globalHeader = convertGridDataToJsonData(res);
+        console.log("findHeader", globalHeader);
+      });
+      fineAllGlobalDataByType(Constants.DATA_TYPE.BODY).then((res) => {
+        if (res && res.length > 0) {
+          console.log("findBody", res[0].value);
+        }
+      });
 
       return Request(requestData).then(
         (response) => {
@@ -167,6 +182,7 @@ export default {
         }
       );
     },
+
     refreshTabs() {
       let self = this,
         requestParameter = self.$refs.requestParameter,

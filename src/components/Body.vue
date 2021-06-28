@@ -1,28 +1,31 @@
 <template>
   <v-textarea
-    :value="value"
+    v-model="body"
     :height="height"
-    @input="myInput"
     filled
     class="ml-5 mr-5 mt-5 mb-5"
     color="success"
+    @input="myInput"
   ></v-textarea>
 </template>
 
 <script>
 export default {
   props: ["value", "height"],
-  components: {},
+
+  created() {},
+
   data() {
     return {
-      body: null,
+      body: this.value,
     };
   },
-  created() {
-    let self = this;
-    self.body = this.data;
-  },
+
   methods: {
+    setBody(value) {
+      this.body = value;
+    },
+
     myInput(value) {
       this.$emit("input", value);
     },

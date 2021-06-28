@@ -196,3 +196,27 @@ function appendChild(result, idName, parentUid, child, expandedValue) {
         }
     }
 }
+
+
+export function convertGridDataToJsonData(gridDataList) {
+    var jsonData = {};
+
+    for (var gridData of gridDataList) {
+      jsonData[gridData["key"]] = gridData["value"];
+    }
+
+    return jsonData;
+  }
+
+  export  function convertJsonDataToGridData(jsonData) {
+    var gridDataList = [];
+
+    for (var jsonKey in jsonData) {
+      gridDataList.push({
+        key: jsonKey,
+        value: jsonData[jsonKey],
+      });
+    }
+
+    return gridDataList;
+  }

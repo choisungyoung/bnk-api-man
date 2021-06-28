@@ -38,7 +38,11 @@
 
 <script>
 import Grid from "@/components/Grid";
-import { CustomSingleCheckboxRowHeaders } from "@/util/GridUtils";
+import {
+  CustomSingleCheckboxRowHeaders,
+  convertGridDataToJsonData,
+  convertJsonDataToGridData,
+} from "@/util/GridUtils";
 export default {
   components: {
     Grid,
@@ -55,8 +59,7 @@ export default {
   },
   created() {
     let self = this,
-      editorVal = self.dvcd === "request" ? "text" : null;
-
+      editorVal = self.dvcd === "edit" ? "text" : null;
     self.gridOpts = {
       data: [],
       rowHeaders: [
@@ -109,14 +112,14 @@ export default {
       if (gridDataList.length <= 0) {
         return null;
       }
-      return self.getGridDataToJsonData(gridDataList);
+      return convertGridDataToJsonData(gridDataList);
     },
     setHeader(jsonData) {
       let self = this,
         headerGrid = self.$refs.headerGrid;
 
       if (jsonData) {
-        headerGrid.setData(self.getJsonDataToGridData(jsonData));
+        headerGrid.setData(convertJsonDataToGridData(jsonData));
         headerGrid.refreshLayout();
       }
     },
@@ -141,26 +144,16 @@ export default {
       headerGrid.refreshLayout(); // grid 화면 reload
     },
 
-    getGridDataToJsonData(gridDataList) {
-      var jsonData = {};
+    setGridData(gridData) {
+      let self = this,
+        headerGrid = self.$refs.headerGrid;
 
-      for (var gridData of gridDataList) {
-        jsonData[gridData["key"]] = gridData["value"];
-      }
-
-      return jsonData;
+      headerGrid.setData(gridData);
     },
-
-    getJsonDataToGridData(jsonData) {
-      var gridDataList = [];
-
-      for (var jsonKey in jsonData) {
-        gridDataList.push({
-          key: jsonKey,
-          value: jsonData[jsonKey],
-        });
-      }
-
+    getGridData() {
+      let self = this,
+        headerGrid = self.$refs.headerGrid,
+        gridDataList = headerGrid.getData();
       return gridDataList;
     },
   },

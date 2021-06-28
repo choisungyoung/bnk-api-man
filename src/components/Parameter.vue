@@ -38,7 +38,10 @@
 
 <script>
 import Grid from "@/components/Grid";
-import { CustomSingleCheckboxRowHeaders } from "@/util/GridUtils";
+import {
+  CustomSingleCheckboxRowHeaders,
+  convertGridDataToJsonData,
+} from "@/util/GridUtils";
 export default {
   components: {
     Grid,
@@ -54,7 +57,8 @@ export default {
     },
   },
   created() {
-    let self = this;
+    let self = this,
+      editorVal = self.dvcd === "edit" ? "text" : null;
     self.gridOpts = {
       data: [],
       rowHeaders: [
@@ -72,21 +76,21 @@ export default {
           name: "key",
           align: "left",
           minWidth: 130,
-          editor: "text",
+          editor: editorVal,
         },
         {
           header: "VALUE",
           name: "value",
           align: "left",
           minWidth: 130,
-          editor: "text",
+          editor: editorVal,
         },
         {
           header: "DESCRIPTION",
           name: "description",
           align: "left",
           minWidth: 130,
-          editor: "text",
+          editor: editorVal,
         },
       ],
     };
@@ -105,7 +109,7 @@ export default {
       if (gridDataList.length <= 0) {
         return null;
       }
-      return self.getGridDataToJsonData(gridDataList);
+      return convertGridDataToJsonData(gridDataList);
     },
 
     createData() {
@@ -126,6 +130,18 @@ export default {
       let self = this,
         parameterGrid = self.$refs.parameterGrid;
       parameterGrid.refreshLayout(); // grid 화면 reload
+    },
+    setGridData(gridData) {
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid;
+
+      parameterGrid.setData(gridData);
+    },
+    getGridData() {
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid,
+        gridDataList = parameterGrid.getData();
+      return gridDataList;
     },
 
     getGridDataToJsonData(gridDataList) {
