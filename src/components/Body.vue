@@ -25,6 +25,9 @@ export default {
     setBody(value) {
       this.body = value;
     },
+    getBody() {
+      return this.body;
+    },
 
     myInput(value) {
       this.$emit("input", value);

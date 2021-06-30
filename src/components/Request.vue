@@ -1,5 +1,43 @@
 <template>
   <v-container>
+    <v-app-bar app clipped-right flat height="72">
+      <v-responsive max-width="300" class="pt-6">
+        <v-text-field
+          color="success"
+          label="GroupName"
+          outlined
+          clearable
+          dense
+        >
+        </v-text-field>
+      </v-responsive>
+      <v-responsive class="pt-6 ml-3">
+        <v-text-field
+          color="success"
+          label="ApiName"
+          v-model="name"
+          outlined
+          clearable
+          dense
+        >
+        </v-text-field>
+      </v-responsive>
+      <v-btn color="blue-grey" class="ma-2 white--text" @click="saveRequest">
+        save
+      </v-btn>
+      <v-responsive max-width="200">
+        <v-btn
+          color="blue-grey"
+          class="ma-2 white--text"
+          @click="openRightDrawer"
+        >
+          global data
+          <v-icon right dark>
+            mdi-table
+          </v-icon>
+        </v-btn>
+      </v-responsive>
+    </v-app-bar>
     <v-row class="text-center" id="main-content">
       <v-col class="d-flex" cols="2">
         <v-select
@@ -29,6 +67,27 @@
         <v-tab v-for="item in requestTabs" :key="item" @click="refreshTabs()">
           {{ item }}
         </v-tab>
+        <v-btn
+          color="info"
+          class="ma-2 white--text"
+          @click="addRemoveGlobalData"
+          absolute
+          right
+          v-if="isAddGlobalData"
+        >
+          REMOVE GLOBAL DATA
+        </v-btn>
+        <v-btn
+          color="info"
+          class="ma-2 white--text"
+          @click="addRemoveGlobalData"
+          outlined
+          absolute
+          right
+          v-else
+        >
+          ADD GLOBAL DATA
+        </v-btn>
       </v-tabs>
 
       <v-tabs-items v-model="requestTab">
@@ -97,8 +156,16 @@ import Parameter from "@/components/Parameter";
 import Header from "./Header.vue";
 import Body from "./Body.vue";
 import Request from "@/Request";
-import { fineAllGlobalDataByType } from "@/util/DbAccessUtils";
-import { convertGridDataToJsonData } from "@/util/GridUtils";
+import {
+  fineAllGlobalDataByType,
+  fineAllRequestById,
+  fineAllRequestDataByRequestId,
+  saveRequest,
+  saveRequestData,
+  deleteAllRequestDataByRequestId,
+} from "@/util/DbAccessUtils";
+//import { convertGridDataToJsonData } from "@/util/GridUtils";
+import EventBus from "@/util/EventBus";
 import Constants from "@/constants";
 
 export default {
@@ -108,6 +175,7 @@ export default {
     Header,
     Body,
   },
+
   data() {
     return {
       methodItems: ["GET", "POST"],
@@ -115,11 +183,14 @@ export default {
       requestTabs: ["params", "header", "body"],
       responseTab: null,
       responseTabs: ["body", "cookies", "header"],
+
+      id: null,
       method: null,
       url: "http://localhost:9999/FW/api/v1/login",
+      name: "",
+
       /* REQUEST */
-      requestBody:
-        '{"userId":"9999999", "password":"chrldkagh1!","cmgrpCd":"01"}',
+      requestBody: "",
       requestHeader: {},
       requestParameter: {},
 
@@ -127,60 +198,227 @@ export default {
       responseBody: "",
       responseHeader: {},
       responseCookie: {},
+
+      /* ADD된 상태인지 */
+      isAddGlobalData: false,
     };
   },
-  mounted() {},
+
+  created() {},
+  mounted() {
+    var self = this,
+      refs = self.$refs;
+    EventBus.$on("request:initRequestData", (requestId) => {
+      self.requestTab = 0;
+      // request list에서 requet 선택시 호출
+      fineAllRequestById(requestId).then(async (res) => {
+        if (res && res.length > 0) {
+          let request = res[0];
+          self.id = request.id;
+          self.name = request.name;
+          self.url = request.url;
+          self.method = request.method;
+          var requestData = await fineAllRequestDataByRequestId(request.id);
+
+          console.log("fineAllRequestDataByRequestId", requestData);
+          refs.requestParameter.setGridData(requestData.parameter);
+          refs.requestHeader.setGridData(requestData.header);
+          refs.requestBody.setBody("");
+          if (requestData.body && requestData.body.length > 0) {
+            refs.requestBody.setBody(requestData.body[0].value);
+          }
+        }
+      });
+    });
+  },
   methods: {
-    requestApi() {
+    async requestApi() {
       let self = this,
         requestParameter = self.$refs.requestParameter,
         requestHeader = self.$refs.requestHeader,
-        requestBody = self.requestBody;
+        requestBody = self.$refs.requestBody;
 
       let requestData = {
         method: self.method,
         url: self.url,
       };
       // request grid 데이터 로드
-      if (requestParameter != null && requestParameter.getParameter() != null) {
+      if (requestParameter) {
         requestData.params = requestParameter.getParameter();
       }
-      if (requestHeader != null && requestHeader.getHeader() != null) {
+      if (requestHeader) {
         requestData.headers = requestHeader.getHeader();
       }
-      if (requestBody != null && requestBody != "") {
-        requestData.data = JSON.parse(requestBody);
+      if (requestBody) {
+        try {
+          requestData.data = JSON.parse(requestBody.getBody());
+        } catch (e) {
+          console.log(e);
+        }
       }
 
-      // global grid 데이터 로드
-      fineAllGlobalDataByType(Constants.DATA_TYPE.PARAMETER).then((res) => {
-        let globalParameter = convertGridDataToJsonData(res);
-        console.log("findParameter", globalParameter);
-      });
-      fineAllGlobalDataByType(Constants.DATA_TYPE.HEADER).then((res) => {
-        let globalHeader = convertGridDataToJsonData(res);
-        console.log("findHeader", globalHeader);
-      });
-      fineAllGlobalDataByType(Constants.DATA_TYPE.BODY).then((res) => {
-        if (res && res.length > 0) {
-          console.log("findBody", res[0].value);
-        }
-      });
+      console.log("requestData", requestData);
 
+      //Request 실행
+      let responseHeader = self.$refs.responseHeader,
+        responseBody = self.$refs.responseBody;
       return Request(requestData).then(
         (response) => {
-          let responseHeader = self.$refs.responseHeader;
-
-          self.responseBody = JSON.stringify(response.data);
-          self.responseHeader = response.headers;
-
-          responseHeader.setHeader(self.responseHeader);
+          responseHeader.setHeader(response.headers);
+          responseBody.setBody(JSON.stringify(response.data));
           // 쿠키 추가
         },
         (error) => {
-          self.responseBody = JSON.stringify(error);
+          responseBody.setBody(JSON.stringify(error));
         }
       );
+    },
+
+    saveRequest() {
+      let self = this,
+        requestParameter = self.$refs.requestParameter,
+        requestHeader = self.$refs.requestHeader,
+        requestBody = self.requestBody;
+
+      if (!self.name) {
+        alert("requet name을 입력하세요");
+        return;
+      }
+      if (!self.url) {
+        alert("requet url을 입력하세요");
+        return;
+      }
+      if (!self.method) {
+        alert("requet method를 입력하세요");
+        return;
+      }
+
+      // Request 테이블에 insert
+      saveRequest({
+        id: self.id,
+        name: self.name,
+        url: self.url,
+        method: self.method,
+      }).then(async (requestId) => {
+        // insert 성공시 RaquestData 저장
+
+        requestParameter.blur();
+        requestHeader.blur();
+        await deleteAllRequestDataByRequestId(requestId);
+
+        if (requestBody) {
+          // body 저장
+          var bodyData = {
+            id: requestId,
+            value: self.requestBody,
+            type: Constants.DATA_TYPE.BODY,
+          };
+          console.log("saveRequestBody", requestBody);
+          await saveRequestData(bodyData); // db 저장
+        }
+
+        if (requestParameter.getGridData()) {
+          for (var param of requestParameter.getGridData()) {
+            param.type = Constants.DATA_TYPE.PARAMETER;
+            param.id = requestId;
+            console.log("saveParameter", param);
+
+            await saveRequestData(param);
+          }
+        }
+        if (requestHeader.getGridData()) {
+          for (var header of requestHeader.getGridData()) {
+            header.type = Constants.DATA_TYPE.HEADER;
+            header.id = requestId;
+            console.log("saveHeader", header);
+            await saveRequestData(header);
+          }
+        }
+        EventBus.$emit("request:initRequestList");
+      });
+    },
+
+    async addRemoveGlobalData() {
+      var self = this,
+        refs = self.$refs;
+      // global grid 데이터 로드
+      let globalData = await fineAllGlobalDataByType();
+      if (self.isAddGlobalData) {
+        // ADD된 상태라면 REQUEST에서 제거
+
+        // parameter overwrite
+        let globalParameter = globalData.parameter;
+        let requestParameter = refs.requestParameter.getGridData();
+        self.removeOverwritedGridData(requestParameter, globalParameter);
+
+        // Header overwrite
+        let globalHeader = globalData.header;
+        let requestHeader = refs.requestHeader.getGridData();
+        self.removeOverwritedGridData(requestHeader, globalHeader);
+
+        // Body overwrite
+        let globalBody = globalData.body; // list
+        let requestBody = {};
+        try {
+          debugger;
+          requestBody = JSON.parse(refs.requestBody.getBody()); // string
+
+          if (globalBody && globalBody.length > 0) {
+            self.removeOverwritedJson(
+              requestBody,
+              JSON.parse(globalBody[0].value)
+            );
+          }
+
+          requestBody = JSON.stringify(requestBody);
+        } catch (e) {
+          // 예외처리
+          alert("body값이 json 형태가 아닙니다.");
+          return;
+        }
+        // 에러가 없을 경우 SetData
+        refs.requestParameter.setGridData(requestParameter);
+        refs.requestHeader.setGridData(requestHeader);
+        refs.requestBody.setBody(requestBody);
+      } else {
+        // ADD되지 않은 상태라면 REQUEST에서 추가
+
+        // parameter overwrite
+        let globalParameter = globalData.parameter;
+        let requestParameter = refs.requestParameter.getGridData();
+        self.overwriteGridData(requestParameter, globalParameter);
+
+        // Header overwrite
+        let globalHeader = globalData.header;
+        let requestHeader = refs.requestHeader.getGridData();
+        self.overwriteGridData(requestHeader, globalHeader);
+
+        // Body overwrite
+        let globalBody = globalData.body; // list
+        let requestBody = {};
+
+        try {
+          debugger;
+          requestBody = JSON.parse(refs.requestBody.getBody()); // string
+
+          if (globalBody && globalBody.length > 0) {
+            self.overwriteJson(requestBody, JSON.parse(globalBody[0].value));
+          }
+
+          requestBody = JSON.stringify(requestBody);
+        } catch (e) {
+          // 예외처리
+          alert("body값이 json 형태가 아닙니다.");
+          return;
+        }
+        // 에러가 없을 경우 SetData
+        refs.requestParameter.setGridData(requestParameter);
+        refs.requestHeader.setGridData(requestHeader);
+        refs.requestBody.setBody(requestBody);
+      }
+
+      // isAddGlobalData 토글
+      self.isAddGlobalData = !self.isAddGlobalData;
     },
 
     refreshTabs() {
@@ -195,6 +433,80 @@ export default {
         responseCookie.refreshLayout();
         responseHeader.refreshLayout();
       }, 100);
+    },
+    openRightDrawer() {
+      this.$emit("input");
+    },
+    overwriteJson(target, source) {
+      if (!target) {
+        target = {};
+      }
+      if (!source) {
+        source = {};
+      }
+      for (var key in source) {
+        target[key] = source[key];
+      }
+
+      return target;
+    },
+
+    removeOverwritedJson(target, source) {
+      if (!target) {
+        target = {};
+      }
+      if (!source) {
+        source = {};
+      }
+      debugger;
+      for (var key in source) {
+        delete target[key];
+      }
+
+      return target;
+    },
+
+    overwriteGridData(target, source) {
+      if (!target) {
+        target = {};
+      }
+      if (!source) {
+        source = {};
+      }
+      for (var src of source) {
+        var isAdd = true;
+        for (var tgt of target) {
+          if (src.key === tgt.key) {
+            tgt.value = src.value;
+            tgt.description = src.description;
+            isAdd = false;
+            break;
+          }
+        }
+        if (isAdd) {
+          target.push(src);
+        }
+      }
+    },
+
+    removeOverwritedGridData(target, source) {
+      if (!target) {
+        target = [];
+      }
+      if (!source) {
+        source = [];
+      }
+
+      debugger;
+
+      for (var src of source) {
+        for (var i = 0; i < target.length; i++) {
+          if (src.key === target[i].key) {
+            target.splice(i, 1);
+            break;
+          }
+        }
+      }
     },
   },
 };

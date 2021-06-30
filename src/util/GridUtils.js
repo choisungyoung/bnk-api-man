@@ -200,7 +200,6 @@ function appendChild(result, idName, parentUid, child, expandedValue) {
 
 export function convertGridDataToJsonData(gridDataList) {
     var jsonData = {};
-
     for (var gridData of gridDataList) {
       jsonData[gridData["key"]] = gridData["value"];
     }

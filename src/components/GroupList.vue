@@ -21,87 +21,36 @@
       ></v-checkbox>
     </v-sheet>
     <v-card-text>
+      <div align="right">
+        <v-btn x-middle icon color="gray" @click="createRequest()">
+          <v-icon dark>
+            mdi-plus
+          </v-icon>
+        </v-btn>
+      </div>
       <v-treeview
         :items="items"
         :search="search"
         :filter="filter"
         :open.sync="open"
+        :load-children="selectRequest"
+        open-on-click
       >
-        <template> </template>
+        <template slot="label" slot-scope="{ item }">
+          <div @click="selectRequest(item)">{{ item.name }}</div>
+        </template>
       </v-treeview>
     </v-card-text>
   </v-card>
 </template>
 
 <script>
+import { fineAllRequestById, saveRequest } from "@/util/DbAccessUtils";
+import EventBus from "@/util/EventBus";
+
 export default {
   data: () => ({
-    items: [
-      {
-        id: 1,
-        name: "Vuetify Human Resources",
-        children: [
-          {
-            id: 2,
-            name: "Core team",
-            children: [
-              {
-                id: 201,
-                name: "John",
-              },
-              {
-                id: 202,
-                name: "Kael",
-              },
-              {
-                id: 203,
-                name: "Nekosaur",
-              },
-              {
-                id: 204,
-                name: "Jacek",
-              },
-              {
-                id: 205,
-                name: "Andrew",
-              },
-            ],
-          },
-          {
-            id: 3,
-            name: "Administrators",
-            children: [
-              {
-                id: 301,
-                name: "Mike",
-              },
-              {
-                id: 302,
-                name: "Hunt",
-              },
-            ],
-          },
-          {
-            id: 4,
-            name: "Contributors",
-            children: [
-              {
-                id: 401,
-                name: "Phlow",
-              },
-              {
-                id: 402,
-                name: "Brandon",
-              },
-              {
-                id: 403,
-                name: "Sean",
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    items: [],
     open: [1, 2],
     search: null,
     caseSensitive: false,
@@ -111,6 +60,44 @@ export default {
       return this.caseSensitive
         ? (item, search, textKey) => item[textKey].indexOf(search) > -1
         : undefined;
+    },
+  },
+  created() {},
+
+  mounted() {
+    EventBus.$on("request:initRequestList", () => {
+      this.initRequestList();
+    });
+  },
+
+  methods: {
+    selectRequest(props) {
+      EventBus.$emit("request:initRequestData", props.id);
+    },
+    createRequest() {
+      var self = this;
+
+      saveRequest({
+        name: "New Request",
+        method: "GET",
+        url: "",
+      });
+      self.initRequestList();
+    },
+
+    initRequestList() {
+      var self = this;
+      fineAllRequestById().then((res) => {
+        self.items = [];
+        for (var row of res) {
+          var item = {
+            id: row.id,
+            name: row.name,
+          };
+
+          self.items.push(item);
+        }
+      });
     },
   },
 };

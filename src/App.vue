@@ -2,41 +2,9 @@
   <v-app id="inspire">
     <v-system-bar app>
       <v-spacer></v-spacer>
-      <v-icon>mdi-square</v-icon>
-      <v-icon>mdi-circle</v-icon>
-      <v-icon>mdi-triangle</v-icon>
-    </v-system-bar>
-
-    <v-app-bar app clipped-right flat height="72">
-      <v-responsive max-width="300" class="pt-6">
-        <v-text-field
-          color="success"
-          label="GroupName"
-          outlined
-          clearable
-          dense
-        >
-        </v-text-field>
-      </v-responsive>
-      <v-responsive class="pt-6 ml-3">
-        <v-text-field color="success" label="ApiName" outlined clearable dense>
-        </v-text-field>
-      </v-responsive>
+      BNKMAN
       <v-spacer></v-spacer>
-
-      <v-responsive max-width="200">
-        <v-btn
-          color="blue-grey"
-          class="ma-2 white--text"
-          @click="rightDrawer = true"
-        >
-          global data
-          <v-icon right dark>
-            mdi-table
-          </v-icon>
-        </v-btn>
-      </v-responsive>
-    </v-app-bar>
+    </v-system-bar>
 
     <v-navigation-drawer
       v-model="leftDrawer"
@@ -59,8 +27,13 @@
         <v-divider class="mx-3 my-5"></v-divider>
 
         <v-avatar
-          v-for="n in 6"
-          :key="n"
+          :key="1"
+          class="d-block text-center mx-auto mb-9"
+          color="grey lighten-1"
+          size="28"
+        ></v-avatar>
+        <v-avatar
+          :key="2"
           class="d-block text-center mx-auto mb-9"
           color="grey lighten-1"
           size="28"
@@ -68,7 +41,7 @@
       </v-navigation-drawer>
 
       <!-- <v-sheet color="grey lighten-5" height="128" width="100%"></v-sheet> -->
-      <GroupList class="ml-14" />
+      <GroupList ref="requestList" class="ml-14" />
       <!--
       <v-list class="pl-14" shaped>
         <v-list-item v-for="n in 5" :key="n" link>
@@ -114,7 +87,7 @@
         </v-tab>
       </v-tabs>
 
-      <v-tabs-items v-model="globalDataTab">
+      <v-tabs-items v-model="globalDataTab" ref="globalTabs">
         <v-tab-item eager>
           <v-card flat>
             <Parameter
@@ -145,7 +118,7 @@
 
     <v-main style="background:#FCFCFC">
       <!--  -->
-      <Request />
+      <Request v-on:input="openRightDrawer()" />
     </v-main>
   </v-app>
 </template>
@@ -158,6 +131,7 @@ import Body from "@/components/Body";
 import GroupList from "@/components/GroupList";
 import Constants from "@/constants";
 import {
+  initTable,
   fineAllGlobalDataByType,
   saveGlobalData,
   deleteAllGlobalData,
@@ -185,9 +159,18 @@ export default {
     globalBody: "",
   }),
 
-  mounted() {},
+  created() {
+    var self = this;
+    self.initTable();
+  },
 
   methods: {
+    async initTable() {
+      var refs = this.$refs;
+      await initTable();
+      refs.requestList.initRequestList();
+    },
+
     inputEvent: function(isOpening) {
       let refs = this.$refs,
         globalParameter = refs.globalParameter,
@@ -198,6 +181,8 @@ export default {
         // 닫힐 경우 저장
         // 모두 지우고 3개 grid정보 저장
         let globalData = {};
+        refs.globalParameter.blur();
+        refs.globalHeader.blur();
         deleteAllGlobalData();
 
         // grid 데이터 가져오기
@@ -262,6 +247,10 @@ export default {
         globalParameter.refreshLayout();
         globalHeader.refreshLayout();
       }, 100);
+    },
+
+    openRightDrawer() {
+      this.rightDrawer = true;
     },
   },
 };

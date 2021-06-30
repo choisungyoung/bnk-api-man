@@ -131,6 +131,17 @@ export default {
         parameterGrid = self.$refs.parameterGrid;
       parameterGrid.refreshLayout(); // grid 화면 reload
     },
+    blur() {
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid;
+      parameterGrid.blur(); // grid blur
+    },
+    appendGridData(gridData) {
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid;
+
+      parameterGrid.appendRows(gridData);
+    },
     setGridData(gridData) {
       let self = this,
         parameterGrid = self.$refs.parameterGrid;
@@ -141,30 +152,6 @@ export default {
       let self = this,
         parameterGrid = self.$refs.parameterGrid,
         gridDataList = parameterGrid.getData();
-      return gridDataList;
-    },
-
-    getGridDataToJsonData(gridDataList) {
-      var jsonData = {};
-
-      for (var gridData of gridDataList) {
-        jsonData[gridData["key"]] = gridData["value"];
-      }
-
-      return jsonData;
-    },
-
-    getJsonDataToGridData(jsonData) {
-      var gridDataList = [];
-
-      for (var jsonKey in jsonData) {
-        gridDataList.push({
-          key: jsonKey,
-          value: jsonData[jsonKey],
-          description: "123",
-        });
-      }
-
       return gridDataList;
     },
   },

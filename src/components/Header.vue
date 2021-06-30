@@ -144,6 +144,12 @@ export default {
       headerGrid.refreshLayout(); // grid 화면 reload
     },
 
+    blur() {
+      let self = this,
+        headerGrid = self.$refs.headerGrid;
+      headerGrid.blur(); // grid blur
+    },
+
     setGridData(gridData) {
       let self = this,
         headerGrid = self.$refs.headerGrid;
