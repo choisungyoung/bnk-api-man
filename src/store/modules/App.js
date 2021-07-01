@@ -1,5 +1,5 @@
 // Vuex 흐름 : View -[dispatch]-> Actions -[commit]-> Mutations -[change]-> state
-import {initTable, fineAllGlobalDataByType} from '../../util/DbAccessUtils'
+import DbAccessUtils from '../../util/DbAccessUtils'
 
 // ---------------------------------------------------------------------------
 // STATE
@@ -41,8 +41,8 @@ const getters = {
 const mutations = {
   INIT_GLOBAL_DATA: (state, payload) => {
     console.log(payload)
-    initTable();
-    state.globalParameter = fineAllGlobalDataByType('01');
+    DbAccessUtils.initTable();
+    state.globalParameter = DbAccessUtils.findAllGlobalDataByType('01');
   },
 }
 

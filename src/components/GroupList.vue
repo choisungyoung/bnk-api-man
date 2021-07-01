@@ -28,12 +28,12 @@
           </v-icon>
         </v-btn>
       </div>
+
       <v-treeview
         :items="items"
         :search="search"
         :filter="filter"
         :open.sync="open"
-        :load-children="selectRequest"
         open-on-click
       >
         <template slot="label" slot-scope="{ item }">
@@ -45,10 +45,12 @@
 </template>
 
 <script>
-import { fineAllRequestById, saveRequest } from "@/util/DbAccessUtils";
+import DbAccessUtils from "@/util/DbAccessUtils";
 import EventBus from "@/util/EventBus";
+import Constants from "@/constants";
 
 export default {
+  props: ["listDvcd"],
   data: () => ({
     items: [],
     open: [1, 2],
@@ -70,6 +72,13 @@ export default {
     });
   },
 
+  watch: {
+    listDvcd: () => {
+      debugger;
+      this.initRequestList();
+    },
+  },
+
   methods: {
     selectRequest(props) {
       EventBus.$emit("request:initRequestData", props.id);
@@ -77,7 +86,7 @@ export default {
     createRequest() {
       var self = this;
 
-      saveRequest({
+      DbAccessUtils.saveRequest({
         name: "New Request",
         method: "GET",
         url: "",
@@ -87,17 +96,32 @@ export default {
 
     initRequestList() {
       var self = this;
-      fineAllRequestById().then((res) => {
-        self.items = [];
-        for (var row of res) {
-          var item = {
-            id: row.id,
-            name: row.name,
-          };
+      debugger;
+      if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
+        DbAccessUtils.findAllRequestById().then((res) => {
+          self.items = [];
+          for (var row of res) {
+            var item = {
+              id: row.id,
+              name: row.name,
+            };
 
-          self.items.push(item);
-        }
-      });
+            self.items.push(item);
+          }
+        });
+      } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
+        DbAccessUtils.findAllRequestHistoryById().then((res) => {
+          self.items = [];
+          for (var row of res) {
+            var item = {
+              id: row.id,
+              name: row.url,
+            };
+
+            self.items.push(item);
+          }
+        });
+      }
     },
   },
 };

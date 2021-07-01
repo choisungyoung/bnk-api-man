@@ -6,4 +6,9 @@ export default Object.freeze({
     BODY: "03",
     COOKIE: "04",
   },
+
+  LIST_DVCD: {
+    REQUEST:"01",
+    HISTORY:"02"
+  }
 })

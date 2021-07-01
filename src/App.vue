@@ -26,22 +26,22 @@
 
         <v-divider class="mx-3 my-5"></v-divider>
 
-        <v-avatar
-          :key="1"
-          class="d-block text-center mx-auto mb-9"
-          color="grey lighten-1"
-          size="28"
-        ></v-avatar>
-        <v-avatar
-          :key="2"
-          class="d-block text-center mx-auto mb-9"
-          color="grey lighten-1"
-          size="28"
-        ></v-avatar>
+        <v-btn
+          v-for="tab in tabs"
+          :key="tab.listDvcd"
+          icon
+          x-large
+          class="d-block text-center mx-auto mb-2"
+          @click="setListDvcd(tab.listDvcd)"
+        >
+          <v-icon dark>
+            {{ tab.iconName }}
+          </v-icon>
+        </v-btn>
       </v-navigation-drawer>
 
       <!-- <v-sheet color="grey lighten-5" height="128" width="100%"></v-sheet> -->
-      <GroupList ref="requestList" class="ml-14" />
+      <GroupList ref="requestList" class="ml-14" :listDvcd="listDvcd" />
       <!--
       <v-list class="pl-14" shaped>
         <v-list-item v-for="n in 5" :key="n" link>
@@ -130,12 +130,7 @@ import Header from "@/components/Header";
 import Body from "@/components/Body";
 import GroupList from "@/components/GroupList";
 import Constants from "@/constants";
-import {
-  initTable,
-  fineAllGlobalDataByType,
-  saveGlobalData,
-  deleteAllGlobalData,
-} from "@/util/DbAccessUtils";
+import DbAccessUtils from "@/util/DbAccessUtils";
 
 export default {
   name: "App",
@@ -149,6 +144,8 @@ export default {
   },
 
   data: () => ({
+    listDvcd: Constants.LIST_DVCD.REQUEST,
+
     leftDrawer: true,
     rightDrawer: false,
     group: null,
@@ -157,6 +154,17 @@ export default {
     globalParameter: {},
     globalHeader: {},
     globalBody: "",
+
+    tabs: [
+      {
+        listDvcd: Constants.LIST_DVCD.REQUEST,
+        iconName: "mdi-send",
+      },
+      {
+        listDvcd: Constants.LIST_DVCD.HISTORY,
+        iconName: "mdi-history",
+      },
+    ],
   }),
 
   created() {
@@ -167,7 +175,7 @@ export default {
   methods: {
     async initTable() {
       var refs = this.$refs;
-      await initTable();
+      await DbAccessUtils.initTable();
       refs.requestList.initRequestList();
     },
 
@@ -183,7 +191,7 @@ export default {
         let globalData = {};
         refs.globalParameter.blur();
         refs.globalHeader.blur();
-        deleteAllGlobalData();
+        DbAccessUtils.deleteAllGlobalData();
 
         // grid 데이터 가져오기
         if (globalParameter != null && globalParameter.getGridData() != null) {
@@ -198,44 +206,50 @@ export default {
           bodyData.value = globalData.body;
           bodyData.type = Constants.DATA_TYPE.BODY;
           console.log("saveBody", bodyData);
-          saveGlobalData(bodyData); // db 저장
+          DbAccessUtils.saveGlobalData(bodyData); // db 저장
         }
         // grid 데이터 db에 저장
         if (globalData.parameter) {
           for (var param of globalData.parameter) {
             param.type = Constants.DATA_TYPE.PARAMETER;
             console.log("saveParameter", param);
-            saveGlobalData(param);
+            DbAccessUtils.saveGlobalData(param);
           }
         }
         if (globalData.header) {
           for (var header of globalData.header) {
             header.type = Constants.DATA_TYPE.HEADER;
             console.log("saveHeader", header);
-            saveGlobalData(header);
+            DbAccessUtils.saveGlobalData(header);
           }
         }
       } else {
         // 열릴때 DB 데이터 로드
-        fineAllGlobalDataByType(Constants.DATA_TYPE.PARAMETER).then((res) => {
+        DbAccessUtils.findAllGlobalDataByType(
+          Constants.DATA_TYPE.PARAMETER
+        ).then((res) => {
           console.log("findParameter", res);
           globalParameter.setGridData(res);
         });
-        fineAllGlobalDataByType(Constants.DATA_TYPE.HEADER).then((res) => {
-          console.log("findHeader", res);
-          globalHeader.setGridData(res);
-        });
-        fineAllGlobalDataByType(Constants.DATA_TYPE.BODY).then((res) => {
-          console.log("findBody", res);
-          if (res && res.length > 0) {
-            this.$refs.globalBody.setBody(res[0].value);
+        DbAccessUtils.findAllGlobalDataByType(Constants.DATA_TYPE.HEADER).then(
+          (res) => {
+            console.log("findHeader", res);
+            globalHeader.setGridData(res);
           }
-        });
+        );
+        DbAccessUtils.findAllGlobalDataByType(Constants.DATA_TYPE.BODY).then(
+          (res) => {
+            console.log("findBody", res);
+            if (res && res.length > 0) {
+              this.$refs.globalBody.setBody(res[0].value);
+            }
+          }
+        );
       }
     },
 
-    fineAllGlobalData: function(type) {
-      var result = fineAllGlobalDataByType(type);
+    findAllGlobalData: function(type) {
+      var result = DbAccessUtils.findAllGlobalDataByType(type);
       console.log("result", result);
     },
 
@@ -251,6 +265,10 @@ export default {
 
     openRightDrawer() {
       this.rightDrawer = true;
+    },
+
+    setListDvcd(listDvcd) {
+      this.listDvcd = listDvcd;
     },
   },
 };

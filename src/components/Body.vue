@@ -1,6 +1,6 @@
 <template>
   <v-textarea
-    v-model="body"
+    v-model="jsonBody"
     :height="height"
     filled
     class="ml-5 mr-5 mt-5 mb-5"
@@ -20,13 +20,26 @@ export default {
       body: this.value,
     };
   },
+  computed: {
+    jsonBody: {
+      get() {
+        if (!this.body) {
+          return "{}";
+        }
+        return this.body;
+      },
+      set(newValue) {
+        this.body = newValue;
+      },
+    },
+  },
 
   methods: {
     setBody(value) {
       this.body = value;
     },
     getBody() {
-      return this.body;
+      return this.jsonBody;
     },
 
     myInput(value) {

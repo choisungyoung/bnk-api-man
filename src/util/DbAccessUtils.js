@@ -1,125 +1,78 @@
 
 import Constants from "@/constants";
-
 const sqlite3 = require('sqlite3').verbose()
 let db
-
-// 连接数据库
-function conn () {
+function conn() {
   if (!db || !db.open) {
     db = new sqlite3.Database('base.db')
   }
   return db
 }
 
-// 初始化数据表
-export const initTable = () => {
-  return new Promise((resolve) => {
-    let db = conn()
-    db.serialize(() => {
-      db.run('CREATE TABLE IF NOT EXISTS GLOBAL_DATA (id INTEGER PRIMARY KEY AUTOINCREMENT, type CHAR(2), key VARCHAR(100), value VARCHAR(2000), description VARCHAR(200))');
-      db.run('CREATE TABLE IF NOT EXISTS REQUEST (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100), method VARCHAR(10), url VARCHAR(2000))');
-      db.run('CREATE TABLE IF NOT EXISTS REQUEST_DATA (id INTEGER PRIMARY KEY AUTOINCREMENT, requestId INTEGER, type CHAR(2), key VARCHAR(100), value VARCHAR(2000), description VARCHAR(200))');
-      
-      resolve()
-    })
-  })
-}
+export default {
 
-export const saveRequest = (request) => {
-  return new Promise((resolve) => {
-    let db = conn()
-    if (request.id) {
-      // UPDATE
-      let prepare = db.prepare('UPDATE REQUEST SET name=?, method=?, url=? WHERE id=?')
-      prepare.run(request.name, request.method, request.url, request.id, function(err) {
-        if (!err) resolve(request.id)
+  initTable() {
+    return new Promise((resolve) => {
+      let db = conn()
+      db.serialize(() => {
+        db.run('CREATE TABLE IF NOT EXISTS GLOBAL_DATA (id INTEGER PRIMARY KEY AUTOINCREMENT, type CHAR(2), key VARCHAR(100), value VARCHAR(2000), description VARCHAR(200))');
+        db.run('CREATE TABLE IF NOT EXISTS REQUEST (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100), method VARCHAR(10), url VARCHAR(2000))');
+        db.run('CREATE TABLE IF NOT EXISTS REQUEST_DATA (id INTEGER PRIMARY KEY AUTOINCREMENT, requestId INTEGER, type CHAR(2), key VARCHAR(100), value VARCHAR(2000), description VARCHAR(200))');
+        db.run('CREATE TABLE IF NOT EXISTS REQUEST_HISTORY (id INTEGER PRIMARY KEY AUTOINCREMENT, method VARCHAR(10), url VARCHAR(2000), requestParameter VARCHAR(2000), requestHeader VARCHAR(2000), requestBody VARCHAR(2000), requestDtti TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)');
+        
+        resolve()
       })
-    }
-    else {
-      // INSERT
-      let prepare = db.prepare('REPLACE INTO REQUEST (name, method, url) VALUES (?, ?, ?)')
-      prepare.run(request.name, request.method, request.url, function(err) {
-        if (!err) resolve(this.lastID)
-      })
-    }
-  })
-}
-
-export const saveRequestData = (requestData) => {
-  return new Promise((resolve) => {
-    let db = conn()
-    let prepare = db.prepare('INSERT INTO REQUEST_DATA (type, requestId, key, value, description) VALUES (?, ?, ?, ?, ?)')
-    prepare.run(requestData.type, requestData.id, requestData.key, requestData.value, requestData.description)
-    prepare.finalize(err => { 
-      if (!err) resolve()
     })
-  })
-}
+  },
 
-
-export const fineAllRequestById = (id) => {
-  return new Promise((resolve, reject) => {
-    let db = conn()
-    var sql  = "SELECT id, name, method, url FROM REQUEST"
-    if (id) {
-      sql += " WHERE id=" + id;
-    }
-    db.all(sql, (err, rows) => {
-      if (err) {
-        reject(err)
+  /*===================REQUEST====================*/
+  findAllRequestById(id) {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "SELECT id, name, method, url FROM REQUEST"
+      if (id) {
+        sql += " WHERE id=" + id;
       }
-        resolve(rows || [])
-    })
-  })
-}
-
-export const fineAllRequestDataByRequestId = (requestId) => {
-  return new Promise((resolve, reject) => {
-    let db = conn()
-    var sql  = "SELECT type, key, value, description FROM REQUEST_DATA WHERE requestId=" + requestId;
-
-    db.all(sql, (err, rows) => {
-      if (err) {
-        reject(err)
-      }
-      var result = {
-        parameter: [],
-        header: [],
-        body: []
-      };
-      for (var i in rows) {
-        let row = rows[i];
-        switch (row.type) {
-          case Constants.DATA_TYPE.PARAMETER:
-            result.parameter.push(row);
-            break;
-          case Constants.DATA_TYPE.HEADER:
-            result.header.push(row);
-            break;
-          case Constants.DATA_TYPE.BODY:
-            result.body.push(row);
-            break;
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
         }
-      }
-      resolve(result || [])
+          resolve(rows || [])
+      })
     })
-  })
-}
+  },
 
-export const fineAllGlobalDataByType = (type) => {
-  return new Promise((resolve, reject) => {
-    let db = conn()
-    var sql  = "SELECT type, key, value, description FROM GLOBAL_DATA"
-    if (type) {
-      sql += " WHERE type='" + type + "'";
-    }
-    db.all(sql, (err, rows) => {
-      if (err) {
-        reject(err)
+  saveRequest(request) {
+    return new Promise((resolve) => {
+      let db = conn()
+      if (request.id) {
+        // UPDATE
+        let prepare = db.prepare('UPDATE REQUEST SET name=?, method=?, url=? WHERE id=?')
+        prepare.run(request.name, request.method, request.url, request.id, function(err) {
+          if (!err) resolve(request.id)
+        })
       }
+      else {
+        // INSERT
+        let prepare = db.prepare('REPLACE INTO REQUEST (name, method, url) VALUES (?, ?, ?)')
+        prepare.run(request.name, request.method, request.url, function(err) {
+          if (!err) resolve(this.lastID)
+        })
+      }
+    })
+  },
 
-      if (!type) {
+
+  /*===================REQUEST DATA====================*/
+  findAllRequestDataByRequestId(requestId) {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "SELECT type, key, value, description FROM REQUEST_DATA WHERE requestId=" + requestId;
+
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
         var result = {
           parameter: [],
           header: [],
@@ -140,77 +93,125 @@ export const fineAllGlobalDataByType = (type) => {
           }
         }
         resolve(result || [])
+      })
+    })
+  },
+
+  saveRequestData(requestData) {
+    return new Promise((resolve) => {
+      let db = conn()
+      let prepare = db.prepare('INSERT INTO REQUEST_DATA (type, requestId, key, value, description) VALUES (?, ?, ?, ?, ?)')
+      prepare.run(requestData.type, requestData.id, requestData.key, requestData.value, requestData.description)
+      prepare.finalize(err => { 
+        if (!err) resolve()
+      })
+    })
+  },
+
+  deleteAllRequestDataByRequestId(requestId) {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      let sql = 'DELETE FROM REQUEST_DATA';
+      if (requestId) {
+        sql += ' WHERE requestid='+requestId;
       }
-      else {
+      db.all(sql, (err, rows) => {
+        if (err) reject(err)
         resolve(rows || [])
+      })
+    })
+  },
+
+  /*===================REQUEST HISTORY====================*/
+  findAllRequestHistoryById(id) {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "SELECT id, method, url, requestParameter, requestHeader, requestBody, requestDtti FROM REQUEST_HISTORY"
+      if (id) {
+        sql += " WHERE id=" + id;
       }
-
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
+          resolve(rows || [])
+      })
     })
-  })
-}
+  },
 
-export const saveGlobalData = (globalData) => {
-  return new Promise((resolve) => {
-    let db = conn()
-    let prepare = db.prepare('INSERT INTO GLOBAL_DATA (type, key, value, description) VALUES (?, ?, ?, ?)')
-    prepare.run(globalData.type, globalData.key, globalData.value, globalData.description)
-    prepare.finalize(err => { 
-      if (!err) resolve()
+  saveRequestHistory(history) {
+    return new Promise((resolve) => {
+      let db = conn()
+        // UPDATE
+        let prepare = db.prepare('REPLACE INTO REQUEST_HISTORY (method, url, requestParameter, requestHeader, requestBody) VALUES (?, ?, ?, ?, ?)')
+        prepare.run(history.method, history.url, history.params, history.headers, history.data, function(err) {
+          if (!err) resolve()
+        })
     })
-  })
-}
+  },
 
-export const deleteAllRequestDataByRequestId = (requestId) => {
-  return new Promise((resolve, reject) => {
-    let db = conn()
-    let sql = 'DELETE FROM REQUEST_DATA';
-    if (requestId) {
-      sql += ' WHERE requestid='+requestId;
-    }
-    db.all(sql, (err, rows) => {
-      if (err) reject(err)
-      resolve(rows || [])
-    })
-  })
-}
 
-export const deleteAllGlobalData = () => {
-  return new Promise((resolve, reject) => {
-    let db = conn()
-    db.all('DELETE FROM GLOBAL_DATA', (err, rows) => {
-      if (err) reject(err)
-      resolve(rows || [])
-    })
-  })
-}
+  /*===================GLOBAL DATA====================*/
+  findAllGlobalDataByType(type)  {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "SELECT type, key, value, description FROM GLOBAL_DATA"
+      if (type) {
+        sql += " WHERE type='" + type + "'";
+      }
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
 
-export const queryAllTree = () => {
-  return new Promise((resolve, reject) => {
-    let db = conn()
-    db.all('select id, name, fatherId from TreeTable order by fatherId', (err, rows) => {
-      if (err) reject(err)
-      resolve(rows || [])
-    })
-  })
-}
+        if (!type) {
+          var result = {
+            parameter: [],
+            header: [],
+            body: []
+          };
+          for (var i in rows) {
+            let row = rows[i];
+            switch (row.type) {
+              case Constants.DATA_TYPE.PARAMETER:
+                result.parameter.push(row);
+                break;
+              case Constants.DATA_TYPE.HEADER:
+                result.header.push(row);
+                break;
+              case Constants.DATA_TYPE.BODY:
+                result.body.push(row);
+                break;
+            }
+          }
+          resolve(result || [])
+        }
+        else {
+          resolve(rows || [])
+        }
 
-export const queryAllProduct = () => {
-  return new Promise((resolve, reject) => {
-    let db = conn()
-    db.all('select id, name from ProductTable', (err, rows) => {
-      if (err) reject(err)
-      resolve(rows || [])
+      })
     })
-  })
-}
+  },
 
-export const insertProduct = (product) => {
-  return new Promise((resolve) => {
-    let db = conn()
-    let prepare = db.prepare('replace into ProductTable (id, name) values (?, ?)')
-    prepare.run(product.id, product.name)
-    prepare.finalize(err => {
-      if (!err) resolve()
+  saveGlobalData(globalData) {
+    return new Promise((resolve) => {
+      let db = conn()
+      let prepare = db.prepare('INSERT INTO GLOBAL_DATA (type, key, value, description) VALUES (?, ?, ?, ?)')
+      prepare.run(globalData.type, globalData.key, globalData.value, globalData.description)
+      prepare.finalize(err => { 
+        if (!err) resolve()
+      })
     })
-  })
+  },
+
+  deleteAllGlobalData () {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      db.all('DELETE FROM GLOBAL_DATA', (err, rows) => {
+        if (err) reject(err)
+        resolve(rows || [])
+      })
+    })
+  }
 }
