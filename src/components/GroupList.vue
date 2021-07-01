@@ -73,9 +73,11 @@ export default {
   },
 
   watch: {
-    listDvcd: () => {
-      debugger;
-      this.initRequestList();
+    listDvcd: {
+      handler: function() {
+        this.initRequestList(); // call it in the context of your component object
+      },
+      deep: true,
     },
   },
 
@@ -99,6 +101,7 @@ export default {
       debugger;
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
         DbAccessUtils.findAllRequestById().then((res) => {
+          debugger;
           self.items = [];
           for (var row of res) {
             var item = {
@@ -111,6 +114,7 @@ export default {
         });
       } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
         DbAccessUtils.findAllRequestHistoryById().then((res) => {
+          debugger;
           self.items = [];
           for (var row of res) {
             var item = {

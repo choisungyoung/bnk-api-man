@@ -34,6 +34,7 @@ export default {
         sql += " WHERE id=" + id;
       }
       db.all(sql, (err, rows) => {
+        debugger;
         if (err) {
           reject(err)
         }
