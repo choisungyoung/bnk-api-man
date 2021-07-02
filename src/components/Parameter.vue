@@ -154,6 +154,12 @@ export default {
         gridDataList = parameterGrid.getData();
       return gridDataList;
     },
+
+    clearData() {
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid;
+      parameterGrid.clearData();
+    },
   },
 };
 </script>

@@ -21,13 +21,30 @@
       ></v-checkbox>
     </v-sheet>
     <v-card-text>
-      <div align="right">
-        <v-btn x-middle icon color="gray" @click="createRequest()">
-          <v-icon dark>
-            mdi-plus
-          </v-icon>
-        </v-btn>
-      </div>
+      <v-container>
+        <v-row no-gutters>
+          <v-col cols="12" sm="6" md="" align-self="center">
+            <h3>
+              <strong>{{ listTitle }}</strong>
+            </h3>
+          </v-col>
+          <v-col cols="6" md="4">
+            <div align="right">
+              <v-btn
+                x-small
+                icon
+                color="gray"
+                @click="createRequest()"
+                v-show="isRequest"
+              >
+                <v-icon dark>
+                  mdi-plus
+                </v-icon>
+              </v-btn>
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
 
       <v-treeview
         :items="items"
@@ -35,9 +52,36 @@
         :filter="filter"
         :open.sync="open"
         open-on-click
+        activatable
+        color="success"
+        @update:active="selectRequest"
       >
         <template slot="label" slot-scope="{ item }">
-          <div @click="selectRequest(item)">{{ item.name }}</div>
+          <div v-if="item.children">
+            {{ item.name }}
+          </div>
+          <div v-else>
+            <v-hover v-slot:default="{ hover }">
+              <div>
+                <v-row no-gutters>
+                  <v-col cols="12" sm="6" md="" align-self="center">
+                    <span
+                      style="width: 200px;display: block;overflow: hidden;text-overflow: ellipsis; white-space: nowrap; "
+                    >
+                      {{ item.name }}
+                    </span>
+                  </v-col>
+                  <v-col cols="auto">
+                    <div align="right" width="30px">
+                      <v-btn icon small @click="deleteRequest(item)">
+                        <v-icon v-if="hover">mdi-delete</v-icon>
+                      </v-btn>
+                    </div>
+                  </v-col>
+                </v-row>
+              </div>
+            </v-hover>
+          </div>
         </template>
       </v-treeview>
     </v-card-text>
@@ -50,10 +94,10 @@ import EventBus from "@/util/EventBus";
 import Constants from "@/constants";
 
 export default {
-  props: ["listDvcd"],
+  props: ["listDvcd", "listTitle"],
   data: () => ({
     items: [],
-    open: [1, 2],
+    open: [],
     search: null,
     caseSensitive: false,
   }),
@@ -62,6 +106,9 @@ export default {
       return this.caseSensitive
         ? (item, search, textKey) => item[textKey].indexOf(search) > -1
         : undefined;
+    },
+    isRequest() {
+      return this.listDvcd === Constants.LIST_DVCD.REQUEST ? true : false;
     },
   },
   created() {},
@@ -77,13 +124,18 @@ export default {
       handler: function() {
         this.initRequestList(); // call it in the context of your component object
       },
-      deep: true,
     },
   },
 
   methods: {
     selectRequest(props) {
-      EventBus.$emit("request:initRequestData", props.id);
+      let id = props[0];
+      let self = this;
+      if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
+        EventBus.$emit("request:initRequestData", id);
+      } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
+        EventBus.$emit("request:initRequestHistory", id);
+      }
     },
     createRequest() {
       var self = this;
@@ -95,13 +147,20 @@ export default {
       });
       self.initRequestList();
     },
+    deleteRequest(props) {
+      let self = this;
+      if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
+        DbAccessUtils.deleteRequestById(props.id);
+      } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
+        DbAccessUtils.deleteRequestHistoryById(props.id);
+      }
+      self.initRequestList();
+    },
 
     initRequestList() {
       var self = this;
-      debugger;
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
         DbAccessUtils.findAllRequestById().then((res) => {
-          debugger;
           self.items = [];
           for (var row of res) {
             var item = {
@@ -114,16 +173,43 @@ export default {
         });
       } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
         DbAccessUtils.findAllRequestHistoryById().then((res) => {
-          debugger;
           self.items = [];
-          for (var row of res) {
-            var item = {
+          let cdate = "",
+            children = [];
+
+          res.slice().forEach(function(row, index, array) {
+            if (index == 0) {
+              self.open.push(row.requestDate);
+            }
+            if (row.requestDate != cdate) {
+              // push timing
+              if (children.length > 0) {
+                // 첫번째 아이템의 경우는 제외하기 위해서
+                let item = {
+                  id: cdate,
+                  name: cdate,
+                  children: children,
+                };
+                self.items.push(item);
+                children = [];
+              }
+              cdate = row.requestDate;
+            }
+            children.push({
               id: row.id,
               name: row.url,
-            };
+            });
 
-            self.items.push(item);
-          }
+            if (index == array.length - 1) {
+              //마지막 item children에 push 후 items에 push
+              let item = {
+                id: cdate,
+                name: cdate,
+                children: children,
+              };
+              self.items.push(item);
+            }
+          });
         });
       }
     },

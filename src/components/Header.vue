@@ -162,6 +162,12 @@ export default {
         gridDataList = headerGrid.getData();
       return gridDataList;
     },
+
+    clearData() {
+      let self = this,
+        headerGrid = self.$refs.headerGrid;
+      headerGrid.clearData();
+    },
   },
 };
 </script>

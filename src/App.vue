@@ -9,7 +9,7 @@
     <v-navigation-drawer
       v-model="leftDrawer"
       app
-      width="350"
+      width="400"
       style="z-index: 998;"
     >
       <v-navigation-drawer
@@ -32,7 +32,7 @@
           icon
           x-large
           class="d-block text-center mx-auto mb-2"
-          @click="setListDvcd(tab.listDvcd)"
+          @click="setListDvcd(tab)"
         >
           <v-icon dark>
             {{ tab.iconName }}
@@ -41,7 +41,12 @@
       </v-navigation-drawer>
 
       <!-- <v-sheet color="grey lighten-5" height="128" width="100%"></v-sheet> -->
-      <GroupList ref="requestList" class="ml-14" :listDvcd="listDvcd" />
+      <GroupList
+        ref="requestList"
+        class="ml-14"
+        :listDvcd="listDvcd"
+        :listTitle="listTitle"
+      />
       <!--
       <v-list class="pl-14" shaped>
         <v-list-item v-for="n in 5" :key="n" link>
@@ -145,6 +150,7 @@ export default {
 
   data: () => ({
     listDvcd: Constants.LIST_DVCD.REQUEST,
+    listTitle: "Request 목록",
 
     leftDrawer: true,
     rightDrawer: false,
@@ -158,10 +164,12 @@ export default {
     tabs: [
       {
         listDvcd: Constants.LIST_DVCD.REQUEST,
+        listTitle: "Request 목록",
         iconName: "mdi-send",
       },
       {
         listDvcd: Constants.LIST_DVCD.HISTORY,
+        listTitle: "History 목록",
         iconName: "mdi-history",
       },
     ],
@@ -267,8 +275,9 @@ export default {
       this.rightDrawer = true;
     },
 
-    setListDvcd(listDvcd) {
-      this.listDvcd = listDvcd;
+    setListDvcd(item) {
+      this.listDvcd = item.listDvcd;
+      this.listTitle = item.listTitle;
     },
   },
 };

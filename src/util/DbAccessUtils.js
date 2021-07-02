@@ -34,7 +34,6 @@ export default {
         sql += " WHERE id=" + id;
       }
       db.all(sql, (err, rows) => {
-        debugger;
         if (err) {
           reject(err)
         }
@@ -63,6 +62,18 @@ export default {
     })
   },
 
+  deleteRequestById(id) {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "DELETE FROM REQUEST WHERE id=" + id;
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
+          resolve(rows || [])
+      })
+    })
+  },
 
   /*===================REQUEST DATA====================*/
   findAllRequestDataByRequestId(requestId) {
@@ -127,10 +138,12 @@ export default {
   findAllRequestHistoryById(id) {
     return new Promise((resolve, reject) => {
       let db = conn()
-      var sql  = "SELECT id, method, url, requestParameter, requestHeader, requestBody, requestDtti FROM REQUEST_HISTORY"
+      var sql  = "SELECT id, method, url, requestParameter, requestHeader, requestBody, requestDtti, strftime('%Y-%m-%d', requestDtti) AS requestDate FROM REQUEST_HISTORY"
       if (id) {
         sql += " WHERE id=" + id;
       }
+      sql += " ORDER BY requestDtti DESC";
+
       db.all(sql, (err, rows) => {
         if (err) {
           reject(err)
@@ -148,6 +161,19 @@ export default {
         prepare.run(history.method, history.url, history.params, history.headers, history.data, function(err) {
           if (!err) resolve()
         })
+    })
+  },
+
+  deleteRequestHistoryById(id) {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "DELETE FROM REQUEST_HISTORY WHERE id=" + id;
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
+          resolve(rows || [])
+      })
     })
   },
 

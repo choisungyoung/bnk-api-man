@@ -22,11 +22,17 @@
         >
         </v-text-field>
       </v-responsive>
-      <v-btn color="blue-grey" class="ma-2 white--text" @click="saveRequest">
+      <v-btn
+        color="blue-grey"
+        class="ma-2 white--text"
+        @click="saveRequest"
+        min-width="100"
+        max-width="200"
+      >
         save
       </v-btn>
     </v-app-bar>
-    <v-row class="text-center" id="main-content">
+    <v-row id="main-content">
       <v-col class="d-flex" cols="2">
         <v-select
           :items="methodItems"
@@ -35,7 +41,7 @@
           color="success"
         ></v-select>
       </v-col>
-      <v-col class="d-flex" cols="8">
+      <v-col cols="10" sm="6" md="">
         <v-text-field
           v-model="url"
           label="URL"
@@ -43,8 +49,15 @@
           clearable
         ></v-text-field>
       </v-col>
-      <v-col class="d-flex" cols="2">
-        <v-btn class="ma-2" color="success" large @click="requestApi()">
+      <v-col cols="auto">
+        <v-btn
+          class="ma-2"
+          color="success"
+          large
+          @click="requestApi()"
+          min-width="100"
+          max-width="200"
+        >
           Send
         </v-btn>
       </v-col>
@@ -125,7 +138,7 @@
         </v-tab-item>
         <v-tab-item eager>
           <v-card flat>
-            <Parameter ref="responseCookie" :data="responseCookie" :height="180"
+            <Parameter ref="responseCookie" :data="responseCookie" :height="210"
           /></v-card>
         </v-tab-item>
         <v-tab-item eager>
@@ -133,7 +146,7 @@
             <Header
               ref="responseHeader"
               v-model="responseHeader"
-              :height="230"
+              :height="210"
             />
           </v-card>
         </v-tab-item>
@@ -151,6 +164,7 @@ import DbAccessUtils from "@/util/DbAccessUtils";
 //import { convertGridDataToJsonData } from "@/util/GridUtils";
 import EventBus from "@/util/EventBus";
 import Constants from "@/constants";
+import { convertJsonDataToGridData } from "@/util/GridUtils";
 
 export default {
   name: "Request",
@@ -190,29 +204,66 @@ export default {
 
   created() {},
   mounted() {
-    var self = this,
-      refs = self.$refs;
+    var self = this;
     EventBus.$on("request:initRequestData", (requestId) => {
       self.requestTab = 0;
       // request list에서 requet 선택시 호출
       DbAccessUtils.findAllRequestById(requestId).then(async (res) => {
         if (res && res.length > 0) {
           let request = res[0];
-          self.id = request.id;
-          self.name = request.name;
-          self.url = request.url;
-          self.method = request.method;
+          let result = {
+            id: request.id,
+            name: request.name,
+            method: request.method,
+            url: request.url,
+            requestParameter: [],
+            requestHeader: [],
+            requestBody: "",
+          };
+
           var requestData = await DbAccessUtils.findAllRequestDataByRequestId(
             request.id
           );
 
           console.log("findAllRequestDataByRequestId", requestData);
-          refs.requestParameter.setGridData(requestData.parameter);
-          refs.requestHeader.setGridData(requestData.header);
-          refs.requestBody.setBody("");
+          result.requestParameter = requestData.parameter;
+          result.requestHeader = requestData.header;
+
           if (requestData.body && requestData.body.length > 0) {
-            refs.requestBody.setBody(requestData.body[0].value);
+            result.requestBody = requestData.body[0].value;
           }
+          self.initRequestData(result);
+        }
+      });
+    });
+
+    EventBus.$on("request:initRequestHistory", (historyId) => {
+      self.requestTab = 0;
+      // request list에서 requet 선택시 호출
+      DbAccessUtils.findAllRequestHistoryById(historyId).then(async (res) => {
+        if (res && res.length > 0) {
+          let history = res[0];
+          let result = {
+            //id: history.id,
+            // 히스토리 저장시 INSERT 가 되게하기 위해 ID는 세팅하지 않음 DbAccessUtil.saveRequest 메소드 참고
+            method: history.method,
+            url: history.url,
+            requestParameter: [],
+            requestHeader: [],
+            requestBody: "",
+          };
+          if (self.isJsonString(history.requestParameter)) {
+            result.requestParameter = convertJsonDataToGridData(
+              JSON.parse(history.requestParameter)
+            );
+          }
+          if (self.isJsonString(history.requestHeader)) {
+            result.requestHeader = convertJsonDataToGridData(
+              JSON.parse(history.requestHeader)
+            );
+          }
+          result.requestBody = history.requestBody;
+          self.initRequestData(result);
         }
       });
     });
@@ -244,13 +295,12 @@ export default {
       }
 
       console.log("requestData", requestData);
-      // Request History 저장
-      DbAccessUtils.saveRequestHistory(requestData);
 
       //Request 실행
       let responseHeader = self.$refs.responseHeader,
         responseBody = self.$refs.responseBody;
-      return Request(requestData).then(
+
+      Request(requestData).then(
         (response) => {
           responseHeader.setHeader(response.headers);
           responseBody.setBody(JSON.stringify(response.data));
@@ -260,6 +310,14 @@ export default {
           responseBody.setBody(JSON.stringify(error));
         }
       );
+
+      requestData.params = JSON.stringify(requestData.params);
+      requestData.headers = JSON.stringify(requestData.headers);
+      requestData.data = JSON.stringify(requestData.data);
+      // Request History 저장
+      DbAccessUtils.saveRequestHistory(requestData);
+      // history list 목록 갱신
+      EventBus.$emit("request:initRequestList");
     },
 
     saveRequest() {
@@ -324,6 +382,24 @@ export default {
         }
         EventBus.$emit("request:initRequestList");
       });
+    },
+
+    initRequestData(request) {
+      let self = this,
+        refs = self.$refs;
+
+      self.id = request.id;
+      self.name = request.name;
+      self.method = request.method;
+      self.url = request.url;
+
+      refs.requestParameter.setGridData(request.requestParameter);
+      refs.requestHeader.setGridData(request.requestHeader);
+      refs.requestBody.setBody(request.requestBody);
+
+      refs.responseHeader.clearData();
+      refs.responseCookie.clearData();
+      refs.responseBody.setBody("");
     },
 
     async addGlobalData() {
@@ -469,6 +545,15 @@ export default {
             break;
           }
         }
+      }
+    },
+    isJsonString(str) {
+      try {
+        var json = JSON.parse(str);
+        return typeof json === "object";
+      } catch (e) {
+        console.log("json 형태가 아닙니다.", str);
+        return false;
       }
     },
   },
