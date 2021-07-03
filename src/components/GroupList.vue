@@ -73,9 +73,40 @@
                   </v-col>
                   <v-col cols="auto">
                     <div align="right" width="30px">
-                      <v-btn icon small @click="deleteRequest(item)">
-                        <v-icon v-if="hover">mdi-delete</v-icon>
-                      </v-btn>
+                      <v-menu bottom left small :offset-y="true">
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn icon small v-bind="attrs" v-on="on">
+                            <v-icon v-if="hover">mdi-dots-vertical</v-icon>
+                          </v-btn>
+                        </template>
+
+                        <v-list>
+                          <v-list-item
+                            link
+                            icon
+                            small
+                            @click="duplicateRequest(item)"
+                            v-show="isRequest"
+                          >
+                            <v-list-item-icon>
+                              <v-icon>mdi-content-copy</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>duplicate</v-list-item-title>
+                          </v-list-item>
+
+                          <v-list-item
+                            link
+                            icon
+                            small
+                            @click="deleteRequest(item)"
+                          >
+                            <v-list-item-icon>
+                              <v-icon>mdi-delete</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>delete</v-list-item-title>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
                     </div>
                   </v-col>
                 </v-row>
@@ -147,6 +178,16 @@ export default {
       });
       self.initRequestList();
     },
+
+    async duplicateRequest(props) {
+      let self = this;
+      if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
+        let id = await DbAccessUtils.duplicateRequestById(props.id);
+        DbAccessUtils.duplicateRequestDataById(id, props.id);
+      }
+      this.$toasted.global.successToast();
+      self.initRequestList();
+    },
     deleteRequest(props) {
       let self = this;
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
@@ -154,6 +195,7 @@ export default {
       } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
         DbAccessUtils.deleteRequestHistoryById(props.id);
       }
+      this.$toasted.global.successToast();
       self.initRequestList();
     },
 

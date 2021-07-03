@@ -4,7 +4,7 @@
       <v-responsive max-width="300" class="pt-6">
         <v-text-field
           color="success"
-          label="GroupName"
+          label="Group Name"
           outlined
           clearable
           dense
@@ -14,7 +14,7 @@
       <v-responsive class="pt-6 ml-3">
         <v-text-field
           color="success"
-          label="ApiName"
+          label="Request Name"
           v-model="name"
           outlined
           clearable
@@ -81,6 +81,7 @@
             mdi-table
           </v-icon>
         </v-btn>
+
         <v-btn
           icon
           color="blue-grey"
@@ -279,6 +280,14 @@ export default {
         method: self.method,
         url: self.url,
       };
+      let loader = this.$loading.show({
+        // Optional parameters
+        container: this.fullPage ? null : this.$refs.formContainer,
+        canCancel: true,
+        onCancel: this.onCancel,
+      });
+      // simulate AJAX
+      setTimeout(() => {}, 5000);
       // request grid 데이터 로드
       if (requestParameter) {
         requestData.params = requestParameter.getParameter();
@@ -305,9 +314,11 @@ export default {
           responseHeader.setHeader(response.headers);
           responseBody.setBody(JSON.stringify(response.data));
           // 쿠키 추가
+          loader.hide();
         },
         (error) => {
           responseBody.setBody(JSON.stringify(error));
+          loader.hide();
         }
       );
 
@@ -327,15 +338,19 @@ export default {
         requestBody = self.requestBody;
 
       if (!self.name) {
-        alert("requet name을 입력하세요");
+        this.$toasted.global.errorToast({
+          message: "requet name을 입력하세요",
+        });
         return;
       }
       if (!self.url) {
-        alert("requet url을 입력하세요");
+        this.$toasted.global.errorToast({ message: "requet url을 입력하세요" });
         return;
       }
       if (!self.method) {
-        alert("requet method를 입력하세요");
+        this.$toasted.global.errorToast({
+          message: "requet method를 입력하세요",
+        });
         return;
       }
 
@@ -380,6 +395,7 @@ export default {
             await DbAccessUtils.saveRequestData(header);
           }
         }
+        this.$toasted.global.successToast();
         EventBus.$emit("request:initRequestList");
       });
     },
@@ -400,6 +416,7 @@ export default {
       refs.responseHeader.clearData();
       refs.responseCookie.clearData();
       refs.responseBody.setBody("");
+      self.refreshTabs();
     },
 
     async addGlobalData() {
@@ -433,11 +450,12 @@ export default {
             JSON.parse(globalBody[0].value)
           );
         }
-
         requestBody = JSON.stringify(requestBody);
       } catch (e) {
         // 예외처리
-        alert("body값이 json 형태가 아닙니다.");
+        this.$toasted.global.errorToast({
+          message: "body값이 json 형태가 아닙니다.",
+        });
         return;
       }
 
@@ -445,9 +463,7 @@ export default {
       refs.requestParameter.setGridData(requestParameter);
       refs.requestHeader.setGridData(requestHeader);
       refs.requestBody.setBody(requestBody);
-
-      let requestParameter1 = refs.requestParameter.getGridData();
-      requestParameter1;
+      this.$toasted.global.successToast();
     },
 
     refreshTabs() {

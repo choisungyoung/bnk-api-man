@@ -1,5 +1,4 @@
 // Vuex 흐름 : View -[dispatch]-> Actions -[commit]-> Mutations -[change]-> state
-
 import Vue from 'vue'
 import Vuex from 'vuex'
 

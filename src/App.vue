@@ -25,19 +25,26 @@
         ></v-avatar>
 
         <v-divider class="mx-3 my-5"></v-divider>
-
-        <v-btn
-          v-for="tab in tabs"
-          :key="tab.listDvcd"
-          icon
-          x-large
-          class="d-block text-center mx-auto mb-2"
-          @click="setListDvcd(tab)"
+        <v-btn-toggle
+          style="flex-direction: column;"
+          tile
+          color="success"
+          group
+          :value="0"
         >
-          <v-icon dark>
-            {{ tab.iconName }}
-          </v-icon>
-        </v-btn>
+          <v-btn
+            v-for="tab in tabs"
+            :key="tab.listDvcd"
+            icon
+            x-large
+            class="d-block text-center mx-auto mb-2"
+            @click="setListDvcd(tab)"
+          >
+            <v-icon dark>
+              {{ tab.iconName }}
+            </v-icon>
+          </v-btn>
+        </v-btn-toggle>
       </v-navigation-drawer>
 
       <!-- <v-sheet color="grey lighten-5" height="128" width="100%"></v-sheet> -->
@@ -231,6 +238,7 @@ export default {
             DbAccessUtils.saveGlobalData(header);
           }
         }
+        this.$toasted.global.successToast();
       } else {
         // 열릴때 DB 데이터 로드
         DbAccessUtils.findAllGlobalDataByType(

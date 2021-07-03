@@ -70,7 +70,19 @@ export default {
         if (err) {
           reject(err)
         }
-          resolve(rows || [])
+        resolve(rows || [])
+      })
+    })
+  },
+
+  duplicateRequestById(id) {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "INSERT INTO REQUEST(name, method, url) SELECT  name || \"_복사본\", method, url FROM REQUEST WHERE id=?";
+      let prepare = db.prepare(sql)
+      prepare.run(id, function(err) {
+        if (!err) resolve(this.lastID)
+        reject(err)
       })
     })
   },
@@ -130,6 +142,18 @@ export default {
       db.all(sql, (err, rows) => {
         if (err) reject(err)
         resolve(rows || [])
+      })
+    })
+  },
+
+  duplicateRequestDataById(newRequestId, oldRequestId) {   // 새로운 request id, 복사할 request id
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "INSERT INTO REQUEST_DATA(requestId, type, key, value, description) SELECT ?, type, key, value, description FROM REQUEST_DATA WHERE requestId=?";
+      let prepare = db.prepare(sql)
+      prepare.run(newRequestId,oldRequestId, function(err) {
+        if (!err) resolve(this.lastID)
+        reject(err)
       })
     })
   },
