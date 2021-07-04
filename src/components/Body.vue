@@ -1,4 +1,7 @@
 <template>
+  <JsonEditor ref="jsonBody" :objData="jsonBody" v-model="jsonBody">
+  </JsonEditor>
+  <!--
   <v-textarea
     v-model="jsonBody"
     :height="height"
@@ -7,6 +10,7 @@
     color="success"
     @input="myInput"
   ></v-textarea>
+  -->
 </template>
 
 <script>
@@ -23,13 +27,10 @@ export default {
   computed: {
     jsonBody: {
       get() {
-        if (!this.body) {
-          return "{}";
-        }
         return this.body;
       },
-      set(newValue) {
-        this.body = newValue;
+      set(value) {
+        this.body = value;
       },
     },
   },
@@ -39,7 +40,7 @@ export default {
       this.body = value;
     },
     getBody() {
-      return this.jsonBody;
+      return this.body;
     },
 
     myInput(value) {

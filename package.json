@@ -21,6 +21,8 @@
     "tui-grid": "^4.17.3",
     "vue": "^2.6.14",
     "vue-cookies": "^1.7.4",
+    "vue-json-edit": "^1.4.3",
+    "vue-json-editor": "^1.4.3",
     "vue-json-ui-editor": "^1.0.0",
     "vue-json-viewer": "^2.2.19",
     "vue-loading-overlay": "^3.0.1",

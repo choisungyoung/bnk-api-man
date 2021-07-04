@@ -166,7 +166,7 @@ export default {
     globalDataTabs: ["params", "header", "body"],
     globalParameter: {},
     globalHeader: {},
-    globalBody: "",
+    globalBody: {},
 
     tabs: [
       {
@@ -215,8 +215,8 @@ export default {
         if (globalHeader != null && globalHeader.getGridData() != null) {
           globalData.header = globalHeader.getGridData();
         }
-        if (globalBody != null && globalBody != "") {
-          globalData.body = globalBody;
+        if (globalBody) {
+          globalData.body = JSON.stringify(globalBody);
           var bodyData = {};
           bodyData.value = globalData.body;
           bodyData.type = Constants.DATA_TYPE.BODY;
@@ -257,7 +257,7 @@ export default {
           (res) => {
             console.log("findBody", res);
             if (res && res.length > 0) {
-              this.$refs.globalBody.setBody(res[0].value);
+              this.$refs.globalBody.setBody(JSON.parse(res[0].value));
             }
           }
         );

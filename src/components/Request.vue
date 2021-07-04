@@ -45,7 +45,7 @@
         <v-text-field
           v-model="url"
           label="URL"
-          color="success"
+          color="green"
           clearable
         ></v-text-field>
       </v-col>
@@ -189,12 +189,12 @@ export default {
       name: "",
 
       /* REQUEST */
-      requestBody: "",
+      requestBody: {},
       requestHeader: {},
       requestParameter: {},
 
       /* RESPONSE */
-      responseBody: "",
+      responseBody: {},
       responseHeader: {},
       responseCookie: {},
 
@@ -219,7 +219,7 @@ export default {
             url: request.url,
             requestParameter: [],
             requestHeader: [],
-            requestBody: "",
+            requestBody: {},
           };
 
           var requestData = await DbAccessUtils.findAllRequestDataByRequestId(
@@ -229,9 +229,9 @@ export default {
           console.log("findAllRequestDataByRequestId", requestData);
           result.requestParameter = requestData.parameter;
           result.requestHeader = requestData.header;
-
+          debugger;
           if (requestData.body && requestData.body.length > 0) {
-            result.requestBody = requestData.body[0].value;
+            result.requestBody = JSON.parse(requestData.body[0].value);
           }
           self.initRequestData(result);
         }
@@ -251,7 +251,7 @@ export default {
             url: history.url,
             requestParameter: [],
             requestHeader: [],
-            requestBody: "",
+            requestBody: {},
           };
           if (self.isJsonString(history.requestParameter)) {
             result.requestParameter = convertJsonDataToGridData(
@@ -263,7 +263,9 @@ export default {
               JSON.parse(history.requestHeader)
             );
           }
-          result.requestBody = history.requestBody;
+          if (self.isJsonString(history.requestBody)) {
+            result.requestBody = JSON.parse(history.requestBody);
+          }
           self.initRequestData(result);
         }
       });
@@ -297,7 +299,7 @@ export default {
       }
       if (requestBody) {
         try {
-          requestData.data = JSON.parse(requestBody.getBody());
+          requestData.data = requestBody.getBody();
         } catch (e) {
           console.log(e);
         }
@@ -312,12 +314,12 @@ export default {
       Request(requestData).then(
         (response) => {
           responseHeader.setHeader(response.headers);
-          responseBody.setBody(JSON.stringify(response.data));
+          responseBody.setBody(response.data);
           // 쿠키 추가
           loader.hide();
         },
         (error) => {
-          responseBody.setBody(JSON.stringify(error));
+          responseBody.setBody(error);
           loader.hide();
         }
       );
@@ -366,12 +368,12 @@ export default {
         requestParameter.blur();
         requestHeader.blur();
         await DbAccessUtils.deleteAllRequestDataByRequestId(requestId);
-
+        debugger;
         if (requestBody) {
           // body 저장
           var bodyData = {
             id: requestId,
-            value: self.requestBody,
+            value: JSON.stringify(self.requestBody),
             type: Constants.DATA_TYPE.BODY,
           };
           console.log("saveRequestBody", requestBody);
@@ -415,7 +417,7 @@ export default {
 
       refs.responseHeader.clearData();
       refs.responseCookie.clearData();
-      refs.responseBody.setBody("");
+      refs.responseBody.setBody({});
       self.refreshTabs();
     },
 
@@ -439,25 +441,11 @@ export default {
       requestHeader = self.overwriteGridData(requestHeader, globalHeader);
 
       // Body overwrite
-      let globalBody = globalData.body; // list
+      let globalBody = globalData.body;
       let requestBody = {};
 
-      try {
-        requestBody = JSON.parse(refs.requestBody.getBody()); // string
-        if (globalBody && globalBody.length > 0) {
-          requestBody = self.overwriteJson(
-            requestBody,
-            JSON.parse(globalBody[0].value)
-          );
-        }
-        requestBody = JSON.stringify(requestBody);
-      } catch (e) {
-        // 예외처리
-        this.$toasted.global.errorToast({
-          message: "body값이 json 형태가 아닙니다.",
-        });
-        return;
-      }
+      requestBody = refs.requestBody.getBody();
+      requestBody = self.overwriteJson(requestBody, globalBody);
 
       // 에러가 없을 경우 SetData
       refs.requestParameter.setGridData(requestParameter);

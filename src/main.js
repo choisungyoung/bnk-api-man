@@ -8,6 +8,7 @@ import '../node_modules/material-icons/iconfont/material-icons.scss'
 import Toasted from 'vue-toasted';
 import VueLoading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
+import JsonEditor from 'vue-json-edit'
 
 Vue.config.productionTip = false;
 
@@ -24,7 +25,9 @@ Vue.use(VueLoading);
 
 //쿠키의 만료일은 7일이다. (글로벌 세팅)
 Vue.$cookies.config("7d");
-
+  
+//Json Editor
+Vue.use(JsonEditor)
 
 new Vue({
   store,
