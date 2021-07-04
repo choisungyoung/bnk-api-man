@@ -229,7 +229,7 @@ export default {
           console.log("findAllRequestDataByRequestId", requestData);
           result.requestParameter = requestData.parameter;
           result.requestHeader = requestData.header;
-          debugger;
+
           if (requestData.body && requestData.body.length > 0) {
             result.requestBody = JSON.parse(requestData.body[0].value);
           }
@@ -314,7 +314,14 @@ export default {
       Request(requestData).then(
         (response) => {
           responseHeader.setHeader(response.headers);
-          responseBody.setBody(response.data);
+          if (this.isJsonString(response.data)) {
+            responseBody.setBody(response.data);
+          } else {
+            responseBody.setBody({ body: response.data });
+            this.$toasted.global.errorToast({
+              message: "REQUEST BODY가 JSON형식이 아닙니다.",
+            });
+          }
           // 쿠키 추가
           loader.hide();
         },
@@ -368,12 +375,11 @@ export default {
         requestParameter.blur();
         requestHeader.blur();
         await DbAccessUtils.deleteAllRequestDataByRequestId(requestId);
-        debugger;
         if (requestBody) {
           // body 저장
           var bodyData = {
             id: requestId,
-            value: JSON.stringify(self.requestBody),
+            value: JSON.stringify(self.$refs.requestBody.getBody()),
             type: Constants.DATA_TYPE.BODY,
           };
           console.log("saveRequestBody", requestBody);
@@ -439,18 +445,25 @@ export default {
       let globalHeader = globalData.header;
       let requestHeader = refs.requestHeader.getGridData();
       requestHeader = self.overwriteGridData(requestHeader, globalHeader);
-
+      debugger;
       // Body overwrite
-      let globalBody = globalData.body;
+      let globalBody = {};
+      let globalBodyList = globalData.body; //list
+      if (globalBodyList && globalBodyList.length > 0) {
+        globalBody = JSON.parse(globalBodyList[0].value);
+      } else {
+        globalBody = {};
+      }
       let requestBody = {};
 
-      requestBody = refs.requestBody.getBody();
+      requestBody = JSON.parse(JSON.stringify(refs.requestBody.getBody()));
       requestBody = self.overwriteJson(requestBody, globalBody);
 
       // 에러가 없을 경우 SetData
       refs.requestParameter.setGridData(requestParameter);
       refs.requestHeader.setGridData(requestHeader);
       refs.requestBody.setBody(requestBody);
+
       this.$toasted.global.successToast();
     },
 

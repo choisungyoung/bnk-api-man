@@ -198,7 +198,7 @@ export default {
       let refs = this.$refs,
         globalParameter = refs.globalParameter,
         globalHeader = refs.globalHeader,
-        globalBody = this.globalBody;
+        globalBody = refs.globalBody;
 
       if (!isOpening) {
         // 닫힐 경우 저장
@@ -216,7 +216,7 @@ export default {
           globalData.header = globalHeader.getGridData();
         }
         if (globalBody) {
-          globalData.body = JSON.stringify(globalBody);
+          globalData.body = JSON.stringify(globalBody.getBody());
           var bodyData = {};
           bodyData.value = globalData.body;
           bodyData.type = Constants.DATA_TYPE.BODY;
