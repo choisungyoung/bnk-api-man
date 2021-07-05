@@ -237,28 +237,41 @@ export default {
       var reader = new FileReader();
       var utils = DbAccessUtils;
       reader.onload = async function() {
-        try {
-          inputJson = JSON.parse(reader.result);
+        const dialogInstance = await self.$dialog.confirm({
+          text:
+            "JSON파일을 IMPORT하시면 기존의 데이터가 모두 삭제됩니다. \n 계속 진행하시겠습니까?",
+          title: "주의",
+          waitForResult: true,
+        });
 
-          // 모든 데이터 삭제
-          await utils.deleteAllRequest();
-          await utils.deleteAllRequestData();
-          await utils.deleteAllGlobalData();
+        if (dialogInstance) {
+          try {
+            inputJson = JSON.parse(reader.result);
 
-          for (var request of inputJson.request) {
-            await utils.saveRequestWithId(request);
+            // 모든 데이터 삭제
+            await utils.deleteAllRequest();
+            await utils.deleteAllRequestData();
+            await utils.deleteAllGlobalData();
+
+            for (var request of inputJson.request) {
+              await utils.saveRequestWithId(request);
+            }
+            for (var requestData of inputJson.requestData) {
+              await utils.saveRequestData(requestData);
+            }
+            debugger;
+            for (var globalData of inputJson.globalData) {
+              await utils.saveGlobalData(globalData);
+            }
+            debugger;
+          } catch (e) {
+            self.$toasted.global.errorToast("입력파일이 JSON형식이 아닙니다.");
+            return;
           }
-          for (var requestData of inputJson.requestData) {
-            await utils.saveRequestData(requestData);
-          }
-          debugger;
-          for (var globalData of inputJson.globalData) {
-            await utils.saveGlobalData(globalData);
-          }
-          debugger;
-        } catch (e) {
-          self.$toasted.global.errorToast("입력파일이 JSON형식이 아닙니다.");
-          return;
+          self.$toasted.global.successToast();
+          self.initRequestList();
+        } else {
+          document.getElementById("fileUpload").value = "";
         }
       };
       reader.readAsText(file, /* optional */ "utf-8");

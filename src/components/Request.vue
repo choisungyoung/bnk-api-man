@@ -349,17 +349,27 @@ export default {
 
       if (!self.name) {
         this.$toasted.global.errorToast({
-          message: "requet name을 입력하세요",
+          message: "REQUEST NAME을 입력하세요",
         });
         return;
       }
       if (!self.url) {
-        this.$toasted.global.errorToast({ message: "requet url을 입력하세요" });
+        this.$toasted.global.errorToast({
+          message: "REQUEST URL을 입력하세요",
+        });
         return;
       }
       if (!self.method) {
         this.$toasted.global.errorToast({
-          message: "requet method를 입력하세요",
+          message: "REQUEST METHOD를 입력하세요",
+        });
+        return;
+      }
+      try {
+        self.$refs.requestBody.getBody();
+      } catch (e) {
+        this.$toasted.global.errorToast({
+          message: "REQUEST BODY가 JSON형식이 아닙니다.",
         });
         return;
       }

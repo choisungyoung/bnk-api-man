@@ -70,5 +70,27 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "build": {
+    "appId": "bnk-api-man",
+    "win": {
+      "target": [{
+        "target": "nsis",
+        "arch": [
+          "x64",
+          "ia32"
+        ]
+      }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "language": 1042,
+      "include": "build/installer.nsh"
+    },
+    "directories": {
+      "output": "C:\\dev\\workspace\\bnk-api-man\\output"
+    }
+  }
 }

@@ -1,6 +1,6 @@
 <template>
   <prism-editor
-    class="my-editor height-300"
+    class="my-editor"
     v-model="body"
     :highlight="highlighter"
     :line-numbers="lineNumbers"
@@ -81,3 +81,9 @@ export default {
   },
 };
 </script>
+<style>
+div.prism-editor-wrapper {
+  max-height: 230px;
+  overflow-y: auto;
+}
+</style>
