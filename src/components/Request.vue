@@ -322,6 +322,7 @@ export default {
               message: "REQUEST BODY가 JSON형식이 아닙니다.",
             });
           }
+          debugger;
           // 쿠키 추가
           loader.hide();
         },
@@ -378,7 +379,7 @@ export default {
         if (requestBody) {
           // body 저장
           var bodyData = {
-            id: requestId,
+            requestId: requestId,
             value: JSON.stringify(self.$refs.requestBody.getBody()),
             type: Constants.DATA_TYPE.BODY,
           };
@@ -389,7 +390,7 @@ export default {
         if (requestParameter.getGridData()) {
           for (var param of requestParameter.getGridData()) {
             param.type = Constants.DATA_TYPE.PARAMETER;
-            param.id = requestId;
+            param.requestId = requestId;
             console.log("saveParameter", param);
 
             await DbAccessUtils.saveRequestData(param);
@@ -398,7 +399,7 @@ export default {
         if (requestHeader.getGridData()) {
           for (var header of requestHeader.getGridData()) {
             header.type = Constants.DATA_TYPE.HEADER;
-            header.id = requestId;
+            header.requestId = requestId;
             console.log("saveHeader", header);
             await DbAccessUtils.saveRequestData(header);
           }
@@ -428,43 +429,51 @@ export default {
     },
 
     async addGlobalData() {
-      // GlobalData를 REQUEST에 추가
-      var self = this,
-        refs = self.$refs;
-      // global grid 데이터 로드
-      let globalData = await DbAccessUtils.findAllGlobalDataByType();
-      // parameter overwrite
-      let globalParameter = globalData.parameter;
-      let requestParameter = refs.requestParameter.getGridData();
-      requestParameter = self.overwriteGridData(
-        requestParameter,
-        globalParameter
-      );
+      const dialogInstance = await this.$dialog.confirm({
+        text: "GLOBAL DATA를 덮어쓰시겠습니까?",
+        title: "주의",
+        waitForResult: true,
+      });
 
-      // Header overwrite
-      let globalHeader = globalData.header;
-      let requestHeader = refs.requestHeader.getGridData();
-      requestHeader = self.overwriteGridData(requestHeader, globalHeader);
-      debugger;
-      // Body overwrite
-      let globalBody = {};
-      let globalBodyList = globalData.body; //list
-      if (globalBodyList && globalBodyList.length > 0) {
-        globalBody = JSON.parse(globalBodyList[0].value);
-      } else {
-        globalBody = {};
+      if (dialogInstance) {
+        // GlobalData를 REQUEST에 추가
+        var self = this,
+          refs = self.$refs;
+        // global grid 데이터 로드
+        let globalData = await DbAccessUtils.findAllGlobalDataByType();
+        // parameter overwrite
+        let globalParameter = globalData.parameter;
+        let requestParameter = refs.requestParameter.getGridData();
+        requestParameter = self.overwriteGridData(
+          requestParameter,
+          globalParameter
+        );
+
+        // Header overwrite
+        let globalHeader = globalData.header;
+        let requestHeader = refs.requestHeader.getGridData();
+        requestHeader = self.overwriteGridData(requestHeader, globalHeader);
+        debugger;
+        // Body overwrite
+        let globalBody = {};
+        let globalBodyList = globalData.body; //list
+        if (globalBodyList && globalBodyList.length > 0) {
+          globalBody = JSON.parse(globalBodyList[0].value);
+        } else {
+          globalBody = {};
+        }
+        let requestBody = {};
+
+        requestBody = JSON.parse(JSON.stringify(refs.requestBody.getBody()));
+        requestBody = self.overwriteJson(requestBody, globalBody);
+
+        // 에러가 없을 경우 SetData
+        refs.requestParameter.setGridData(requestParameter);
+        refs.requestHeader.setGridData(requestHeader);
+        refs.requestBody.setBody(requestBody);
+
+        this.$toasted.global.successToast();
       }
-      let requestBody = {};
-
-      requestBody = JSON.parse(JSON.stringify(refs.requestBody.getBody()));
-      requestBody = self.overwriteJson(requestBody, globalBody);
-
-      // 에러가 없을 경우 SetData
-      refs.requestParameter.setGridData(requestParameter);
-      refs.requestHeader.setGridData(requestHeader);
-      refs.requestBody.setBody(requestBody);
-
-      this.$toasted.global.successToast();
     },
 
     refreshTabs() {

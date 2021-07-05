@@ -62,6 +62,17 @@ export default {
     })
   },
 
+  saveRequestWithId(request) {
+    return new Promise((resolve) => {
+      let db = conn()
+      // INSERT
+      let prepare = db.prepare('REPLACE INTO REQUEST (id, name, method, url) VALUES (?, ?, ?, ?)')
+      prepare.run(request.id, request.name, request.method, request.url, function(err) {
+        if (!err) resolve(this.lastID)
+      })
+    })
+  },
+
   deleteRequestById(id) {
     return new Promise((resolve, reject) => {
       let db = conn()
@@ -75,6 +86,19 @@ export default {
     })
   },
 
+  deleteAllRequest() {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "DELETE FROM REQUEST";
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(rows || [])
+      })
+    })
+  },
+  
   duplicateRequestById(id) {
     return new Promise((resolve, reject) => {
       let db = conn()
@@ -91,7 +115,10 @@ export default {
   findAllRequestDataByRequestId(requestId) {
     return new Promise((resolve, reject) => {
       let db = conn()
-      var sql  = "SELECT type, key, value, description FROM REQUEST_DATA WHERE requestId=" + requestId;
+      var sql  = "SELECT requestId, type, key, value, description FROM REQUEST_DATA";
+      if (requestId) {
+        sql += " WHERE requestId=" + requestId;
+      }
 
       db.all(sql, (err, rows) => {
         if (err) {
@@ -102,21 +129,26 @@ export default {
           header: [],
           body: []
         };
-        for (var i in rows) {
-          let row = rows[i];
-          switch (row.type) {
-            case Constants.DATA_TYPE.PARAMETER:
-              result.parameter.push(row);
-              break;
-            case Constants.DATA_TYPE.HEADER:
-              result.header.push(row);
-              break;
-            case Constants.DATA_TYPE.BODY:
-              result.body.push(row);
-              break;
+        if (requestId) {
+          for (var i in rows) {
+            let row = rows[i];
+            switch (row.type) {
+              case Constants.DATA_TYPE.PARAMETER:
+                result.parameter.push(row);
+                break;
+              case Constants.DATA_TYPE.HEADER:
+                result.header.push(row);
+                break;
+              case Constants.DATA_TYPE.BODY:
+                result.body.push(row);
+                break;
+            }
           }
+          resolve(result || [])
         }
-        resolve(result || [])
+        else {
+          resolve(rows || [])
+        }
       })
     })
   },
@@ -125,7 +157,7 @@ export default {
     return new Promise((resolve) => {
       let db = conn()
       let prepare = db.prepare('INSERT INTO REQUEST_DATA (type, requestId, key, value, description) VALUES (?, ?, ?, ?, ?)')
-      prepare.run(requestData.type, requestData.id, requestData.key, requestData.value, requestData.description)
+      prepare.run(requestData.type, requestData.requestId, requestData.key, requestData.value, requestData.description)
       prepare.finalize(err => { 
         if (!err) resolve()
       })
@@ -158,6 +190,19 @@ export default {
     })
   },
 
+
+  deleteAllRequestData() {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "DELETE FROM REQUEST_DATA";
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(rows || [])
+      })
+    })
+  },
   /*===================REQUEST HISTORY====================*/
   findAllRequestHistoryById(id) {
     return new Promise((resolve, reject) => {
@@ -203,6 +248,19 @@ export default {
 
 
   /*===================GLOBAL DATA====================*/
+  findAllGlobalData()  {
+    return new Promise((resolve, reject) => {
+      let db = conn()
+      var sql  = "SELECT type, key, value, description FROM GLOBAL_DATA"
+      db.all(sql, (err, rows) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(rows || [])
+      })
+    })
+  },
+
   findAllGlobalDataByType(type)  {
     return new Promise((resolve, reject) => {
       let db = conn()

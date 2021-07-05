@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" max-width="500" style="height:96vh">
+  <v-card class="mx-auto" max-width="500" style="height:96vh" elevation="0">
     <v-sheet class="pa-4 grey lighten-1">
       <v-text-field
         v-model="search"
@@ -30,6 +30,31 @@
           </v-col>
           <v-col cols="6" md="4">
             <div align="right">
+              <v-btn
+                x-small
+                icon
+                color="gray"
+                @click="importRequest()"
+                v-show="isRequest"
+                class="mr-3"
+              >
+                <v-icon dark>
+                  mdi-import
+                </v-icon>
+                <input id="fileUpload" type="file" hidden @change="loadFile" />
+              </v-btn>
+              <v-btn
+                x-small
+                icon
+                color="gray"
+                @click="exportRequest()"
+                v-show="isRequest"
+                class="mr-3"
+              >
+                <v-icon dark>
+                  mdi-export
+                </v-icon>
+              </v-btn>
               <v-btn
                 x-small
                 icon
@@ -170,7 +195,7 @@ export default {
     },
     createRequest() {
       var self = this;
-
+      debugger;
       DbAccessUtils.saveRequest({
         name: "New Request",
         method: "GET",
@@ -192,6 +217,7 @@ export default {
       let self = this;
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
         DbAccessUtils.deleteRequestById(props.id);
+        DbAccessUtils.deleteAllRequestDataByRequestId(props.id);
       } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
         DbAccessUtils.deleteRequestHistoryById(props.id);
       }
@@ -199,6 +225,82 @@ export default {
       self.initRequestList();
     },
 
+    async importRequest() {
+      document.getElementById("fileUpload").click();
+    },
+
+    loadFile() {
+      let self = this;
+      console.log(event.target.files[0]);
+      let file = event.target.files[0];
+      let inputJson;
+      var reader = new FileReader();
+      var utils = DbAccessUtils;
+      reader.onload = async function() {
+        try {
+          inputJson = JSON.parse(reader.result);
+
+          // 모든 데이터 삭제
+          await utils.deleteAllRequest();
+          await utils.deleteAllRequestData();
+          await utils.deleteAllGlobalData();
+
+          for (var request of inputJson.request) {
+            await utils.saveRequestWithId(request);
+          }
+          for (var requestData of inputJson.requestData) {
+            await utils.saveRequestData(requestData);
+          }
+          debugger;
+          for (var globalData of inputJson.globalData) {
+            await utils.saveGlobalData(globalData);
+          }
+          debugger;
+        } catch (e) {
+          self.$toasted.global.errorToast("입력파일이 JSON형식이 아닙니다.");
+          return;
+        }
+      };
+      reader.readAsText(file, /* optional */ "utf-8");
+    },
+    async exportRequest() {
+      let outputJson = {
+        request: [],
+        requestData: [],
+        globalData: [],
+      };
+
+      outputJson.request = await DbAccessUtils.findAllRequestById();
+      outputJson.requestData = await DbAccessUtils.findAllRequestDataByRequestId();
+      outputJson.globalData = await DbAccessUtils.findAllGlobalData();
+
+      this.$toasted.global.successToast();
+      const data = JSON.stringify(outputJson);
+      const blob = new Blob([data], { type: "text/plain" });
+      const e = document.createEvent("MouseEvents"),
+        a = document.createElement("a");
+      a.download = "REQUEST_DATA.json";
+      a.href = window.URL.createObjectURL(blob);
+      a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
+      e.initEvent(
+        "click",
+        true,
+        false,
+        window,
+        0,
+        0,
+        0,
+        0,
+        0,
+        false,
+        false,
+        false,
+        false,
+        0,
+        null
+      );
+      a.dispatchEvent(e);
+    },
     initRequestList() {
       var self = this;
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {

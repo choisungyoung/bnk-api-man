@@ -1,7 +1,23 @@
 <template>
+  <prism-editor
+    class="my-editor height-300"
+    v-model="body"
+    :highlight="highlighter"
+    :line-numbers="lineNumbers"
+  ></prism-editor>
+  <!--
+  <div>
+    <h2>vue-code-highlight example</h2>
+    <code-highlight language="javascript">
+      <textarea>
+      var a ;
+      </textarea>
+    </code-highlight>
+  </div>
+  -->
+  <!--
   <JsonEditor ref="jsonBody" :objData="jsonBody" v-model="jsonBody">
   </JsonEditor>
-  <!--
   <v-textarea
     v-model="jsonBody"
     :height="height"
@@ -14,14 +30,27 @@
 </template>
 
 <script>
-export default {
-  props: ["value", "height"],
+// import Prism Editor
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
 
+// import highlighting library (you can use any library you want just return html string)
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-json";
+import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
+export default {
+  props: ["height"],
+  components: {
+    PrismEditor,
+  },
   created() {},
 
   data() {
     return {
-      body: this.value,
+      body: "",
+      lineNumbers: true,
     };
   },
   computed: {
@@ -34,17 +63,20 @@ export default {
       },
     },
   },
-
+  mounted() {},
   methods: {
     setBody(value) {
-      this.body = value;
+      this.body = JSON.stringify(value, null, 4);
     },
     getBody() {
-      return this.body;
+      return JSON.parse(this.body);
     },
 
     myInput(value) {
       this.$emit("input", value);
+    },
+    highlighter(code) {
+      return highlight(code, languages.json); // languages.<insert language> to return html with markup
     },
   },
 };

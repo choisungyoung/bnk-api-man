@@ -10,7 +10,7 @@
       v-model="leftDrawer"
       app
       width="400"
-      style="z-index: 998;"
+      style="z-index: 200;"
     >
       <v-navigation-drawer
         v-model="leftDrawer"
