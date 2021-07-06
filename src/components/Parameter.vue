@@ -1,59 +1,38 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col cols="1" v-show="dvcd == 'edit'">
-        <v-list>
-          <v-list-item dense>
-            <v-btn x-small icon color="success" right @click="createData()">
-              <v-icon dark>
-                mdi-plus
-              </v-icon>
-            </v-btn>
-          </v-list-item>
-        </v-list>
-      </v-col>
-      <v-col :cols="setCol">
-        <Grid
-          id="Parameter_parameterGrid"
-          ref="parameterGrid"
-          :bodyHeight="height"
-          :data="gridOpts.data"
-          :columns="gridOpts.columns"
-          :rowHeaders="gridOpts.rowHeaders"
-          :summary="gridOpts.summary"
-          v-model="selectedRow"
-        ></Grid>
-      </v-col>
-      <v-col md="0"> </v-col>
-    </v-row>
+    <Grid
+      id="Parameter_parameterGrid"
+      ref="parameterGrid"
+      :bodyHeight="height"
+      :data="gridOpts.data"
+      :columns="gridOpts.columns"
+      :rowHeaders="gridOpts.rowHeaders"
+      :summary="gridOpts.summary"
+      :editingFinish="editingFinish"
+      v-model="selectedRow"
+    ></Grid>
   </v-container>
 </template>
 
 <script>
 import Grid from "@/components/Grid";
-import {
-  convertGridDataToJsonData,
-  CustomButton
-} from "@/util/GridUtils";
+import { convertGridDataToJsonData, CustomButton } from "@/util/GridUtils";
 export default {
   components: {
     Grid,
   },
   props: ["data", "height", "dvcd"],
-  computed: {
-    setCol() {
-      if (this.dvcd == "edit") {
-        return 11;
-      } else {
-        return 12;
-      }
-    },
-  },
+  computed: {},
   created() {
     let self = this,
       editorVal = self.dvcd === "edit" ? "text" : null;
     self.gridOpts = {
-      data: [],
+      data: [
+        {
+          key: "",
+          value: "",
+        },
+      ],
       rowHeaders: [
         {
           type: "checkbox",
@@ -87,14 +66,15 @@ export default {
           name: "delete",
           align: "left",
           width: 100,
+          hidden: self.dvcd != "edit",
           renderer: {
             type: CustomButton,
             buttonInfo: {
               innerText: "삭제",
+              //innerHTML: '<i class="fa fa-spinner fa-spin"></i>',
               click: self.removeData,
-            }
-          }
-
+            },
+          },
         },
       ],
     };
@@ -127,8 +107,15 @@ export default {
     removeData(row) {
       let self = this,
         parameterGrid = self.$refs.parameterGrid;
+      let gridDataList = parameterGrid.getData();
+      if (row.rowKey === gridDataList[gridDataList.length - 1].rowKey) {
+        // 마지막일 경우 삭제안되도록
+        this.$toasted.global.errorToast({
+          message: "삭제할 수 없는 행입니다.",
+        });
+        return;
+      }
       parameterGrid.removeRow(row.rowKey);
-      
     },
 
     refreshLayout() {
@@ -150,8 +137,12 @@ export default {
     setGridData(gridData) {
       let self = this,
         parameterGrid = self.$refs.parameterGrid;
-
       parameterGrid.setData(gridData);
+      if (self.dvcd == "edit") {
+        // 편집모드일 경우 디폴트 그리드 추가.
+        let data = { key: "", value: "", delete: null };
+        parameterGrid.appendRow(data);
+      }
     },
     getGridData() {
       let self = this,
@@ -164,6 +155,39 @@ export default {
       let self = this,
         parameterGrid = self.$refs.parameterGrid;
       parameterGrid.clearData();
+    },
+
+    editingFinish(row) {
+      // 편집을 시작하면 디폴트 행 추가
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid,
+        gridDataList = parameterGrid.getData(),
+        lastRow = gridDataList[gridDataList.length - 1];
+
+      if (row.rowKey === lastRow.rowKey) {
+        // 마지막을 편집할 경우 새로운 행 추가
+        if (lastRow.key || lastRow.value || lastRow.description) {
+          let data = { key: "", value: "", delete: null };
+          parameterGrid.appendRow(data);
+        } else {
+          // 편집 시작시 체크 박스 체크하기
+          let grid = row.instance,
+            rowKey = row.rowKey,
+            columnName = "_checked";
+          if (
+            columnName != row.columnName &&
+            grid.getElement(rowKey, "_checked")
+          ) {
+            // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
+            let event = new Event("change");
+            let input = grid
+              .getElement(rowKey, "_checked")
+              .querySelector("input");
+            input.checked = false;
+            input.dispatchEvent(event);
+          }
+        }
+      }
     },
   },
 };

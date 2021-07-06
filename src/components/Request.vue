@@ -2,8 +2,8 @@
   <v-container class="fill-height pa-0">
     <v-row class="no-gutters flex-wrap flex-column fill-height">
       <v-col cols="auto" class="shrink">
-    <v-app-bar app clipped-right flat height="72">
-      <!--
+        <v-app-bar app clipped-right flat height="72">
+          <!--
       <v-responsive max-width="300" class="pt-6">
         <v-text-field
           color="success"
@@ -15,70 +15,75 @@
         </v-text-field>
       </v-responsive>
       -->
-      <v-responsive class="pt-6 ml-3">
-        <v-text-field
-          color="success"
-          label="Request Name"
-          v-model="name"
-          outlined
-          clearable
-          dense
-        >
-        </v-text-field>
-      </v-responsive>
-      <v-btn
-        color="blue-grey"
-        class="ma-2 white--text"
-        @click="saveRequest"
-        min-width="100"
-        max-width="200"
-      >
-        save
-      </v-btn>
-    </v-app-bar>
+          <v-responsive class="pt-6 ml-3">
+            <v-text-field
+              color="success"
+              label="Request Name"
+              v-model="name"
+              outlined
+              clearable
+              dense
+            >
+            </v-text-field>
+          </v-responsive>
+          <v-btn
+            color="blue-grey"
+            class="ma-2 white--text"
+            @click="saveRequest"
+            min-width="100"
+            max-width="200"
+          >
+            save
+          </v-btn>
+        </v-app-bar>
       </v-col>
-      
+
       <v-col cols="auto" class="shrink">
-    <v-row id="main-content">
-      <v-col class="d-flex" cols="2">
-        <v-select
-          :items="methodItems"
-          v-model="method"
-          label="METHOD"
-          color="success"
-          class="ml-4"
-        ></v-select>
-      </v-col>
-      <v-col cols="10" sm="6" md="">
-        <v-text-field
-          v-model="url"
-          label="URL"
-          color="green"
-          clearable
-        ></v-text-field>
-      </v-col>
-      <v-col cols="auto">
-        <v-btn
-          class="ma-2"
-          color="success"
-          large
-          @click="requestApi()"
-          min-width="100"
-          max-width="200"
-        >
-          Send
-        </v-btn>
-      </v-col>
-    </v-row>
+        <v-row id="main-content">
+          <v-col class="d-flex" cols="2">
+            <v-select
+              :items="methodItems"
+              v-model="method"
+              label="METHOD"
+              color="success"
+              class="ml-4"
+            ></v-select>
+          </v-col>
+          <v-col cols="10" sm="6" md="">
+            <v-text-field
+              v-model="url"
+              label="URL"
+              color="green"
+              clearable
+            ></v-text-field>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn
+              class="ma-2"
+              color="success"
+              large
+              @click="requestApi()"
+              min-width="100"
+              max-width="200"
+            >
+              Send
+              <i class="fa fa-spinner fa-spin"></i>
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-col>
 
       <v-col cols="auto" class="shrink pa-3">
-    <v-card elevation="2" height="300px">
-      <v-tabs v-model="requestTab" color="success">
-        <v-tab v-for="item in requestTabs" :key="item" @click="refreshTabs()">
-          {{ item }}
-        </v-tab>
-        <!--
+        <v-card elevation="2" height="300px">
+          <v-tabs v-model="requestTab" color="success">
+            <v-tab
+              v-for="item in requestTabs"
+              :key="item"
+              @click="refreshTabs()"
+            >
+              {{ item }}
+            </v-tab>
+            <!--
         <v-btn
           color="blue-grey"
           class="ma-2 white--text mr-12"
@@ -104,71 +109,77 @@
           <v-icon>mdi-arrow-down-bold</v-icon>
         </v-btn>
         -->
-      </v-tabs>
+          </v-tabs>
 
-      <v-tabs-items v-model="requestTab">
-        <v-tab-item eager>
-          <v-card flat max-height="250px">
-            <Parameter
-              ref="requestParameter"
-              :data="requestParameter"
-              :height="180"
-              :dvcd="'edit'"
-            />
-          </v-card>
-        </v-tab-item>
-        <v-tab-item eager>
-          <v-card flat max-height="250px">
-            <Header
-              ref="requestHeader"
-              :data="requestHeader"
-              :height="180"
-              :dvcd="'edit'"
-            />
-          </v-card>
-        </v-tab-item>
-        <v-tab-item eager>
-          <v-card flat>
-            <Body ref="requestBody" v-model="requestBody" :height="180" />
-          </v-card>
-        </v-tab-item>
-      </v-tabs-items>
-    </v-card>
+          <v-tabs-items v-model="requestTab">
+            <v-tab-item eager>
+              <v-card flat max-height="250px">
+                <Parameter
+                  ref="requestParameter"
+                  :data="requestParameter"
+                  :height="180"
+                  :dvcd="'edit'"
+                />
+              </v-card>
+            </v-tab-item>
+            <v-tab-item eager>
+              <v-card flat max-height="250px">
+                <Header
+                  ref="requestHeader"
+                  :data="requestHeader"
+                  :height="180"
+                  :dvcd="'edit'"
+                />
+              </v-card>
+            </v-tab-item>
+            <v-tab-item eager>
+              <v-card flat>
+                <Body ref="requestBody" v-model="requestBody" :height="180" />
+              </v-card>
+            </v-tab-item>
+          </v-tabs-items>
+        </v-card>
       </v-col>
-    
-      <v-col cols="auto" class="grow pa-3">
-    <v-card elevation="2" height="100%">
-      <v-tabs v-model="responseTab" color="success">
-        <v-tab v-for="item in responseTabs" :key="item" @click="refreshTabs()">
-          {{ item }}
-        </v-tab>
-      </v-tabs>
 
-      <v-tabs-items v-model="responseTab">
-        <v-tab-item eager>
-          <v-card flat>
-            <Body ref="responseBody" v-model="responseBody" :height="230" />
-          </v-card>
-        </v-tab-item>
-        <v-tab-item eager>
-          <v-card flat>
-            <Parameter ref="responseCookie" :data="responseCookie" :height="210"
-          /></v-card>
-        </v-tab-item>
-        <v-tab-item eager>
-          <v-card flat>
-            <Header
-              ref="responseHeader"
-              v-model="responseHeader"
-              :height="210"
-            />
-          </v-card>
-        </v-tab-item>
-      </v-tabs-items>
-    </v-card>
+      <v-col cols="auto" class="grow pa-3">
+        <v-card elevation="2" height="100%">
+          <v-tabs v-model="responseTab" color="success">
+            <v-tab
+              v-for="item in responseTabs"
+              :key="item"
+              @click="refreshTabs()"
+            >
+              {{ item }}
+            </v-tab>
+          </v-tabs>
+
+          <v-tabs-items v-model="responseTab">
+            <v-tab-item eager>
+              <v-card flat>
+                <Body ref="responseBody" v-model="responseBody" :height="230" />
+              </v-card>
+            </v-tab-item>
+            <v-tab-item eager>
+              <v-card flat>
+                <Parameter
+                  ref="responseCookie"
+                  :data="responseCookie"
+                  :height="210"
+              /></v-card>
+            </v-tab-item>
+            <v-tab-item eager>
+              <v-card flat>
+                <Header
+                  ref="responseHeader"
+                  v-model="responseHeader"
+                  :height="210"
+                />
+              </v-card>
+            </v-tab-item>
+          </v-tabs-items>
+        </v-card>
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
@@ -339,7 +350,6 @@ export default {
           } else {
             responseBody.setTextBody(response.data);
           }
-          debugger;
           // 쿠키 추가
           loader.hide();
         },
@@ -382,16 +392,14 @@ export default {
         });
         return;
       }
-      debugger;
       try {
-        self.$refs.requestBody.getBody()
+        self.$refs.requestBody.getBody();
+      } catch (e) {
+        this.$toasted.global.errorToast({
+          message: "REQUEST BODY가 JSON형식이 아닙니다.",
+        });
+        return;
       }
-      catch (e) {
-          this.$toasted.global.errorToast({
-            message: "REQUEST BODY가 JSON형식이 아닙니다.",
-          });
-          return;
-        }
 
       // Request 테이블에 insert
       DbAccessUtils.saveRequest({
@@ -419,15 +427,22 @@ export default {
 
         if (requestParameter.getGridData()) {
           for (var param of requestParameter.getGridData()) {
+            if (!param.key && !param.value && !param.description) {
+              // 빈행은 저장하지 않음
+              continue;
+            }
             param.type = Constants.DATA_TYPE.PARAMETER;
             param.requestId = requestId;
             console.log("saveParameter", param);
-
             await DbAccessUtils.saveRequestData(param);
           }
         }
         if (requestHeader.getGridData()) {
           for (var header of requestHeader.getGridData()) {
+            if (!header.key && !header.value && !header.description) {
+              // 빈행은 저장하지 않음
+              continue;
+            }
             header.type = Constants.DATA_TYPE.HEADER;
             header.requestId = requestId;
             console.log("saveHeader", header);
@@ -483,7 +498,7 @@ export default {
         let globalHeader = globalData.header;
         let requestHeader = refs.requestHeader.getGridData();
         requestHeader = self.overwriteGridData(requestHeader, globalHeader);
-        debugger;
+
         // Body overwrite
         let globalBody = {};
         let globalBodyList = globalData.body; //list

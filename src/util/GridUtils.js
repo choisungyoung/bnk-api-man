@@ -127,6 +127,31 @@ CustomSingleCheckbox.prototype.render = function(props){
 }
 // End Column SingleCheckbox
 
+// Start Column Button
+export function CustomDeleteButton(props){
+
+    const el = document.createElement('button');
+    const { columnInfo } = props;
+    let buttonInfo = columnInfo.renderer.buttonInfo;
+
+    el.type = 'button';
+    el.className = buttonInfo.class;
+    el.innerText = buttonInfo.innerText;
+    el.addEventListener('click', function(){
+        buttonInfo.click(props);
+    });
+
+    this.el = el;
+    this.render(props);
+}
+
+CustomDeleteButton.prototype.getElement = function() {
+    return this.el;
+}
+
+CustomDeleteButton.prototype.render = function(){
+    this.el;
+}
 
 // Start Column Button
 export function CustomButton(props){
@@ -137,6 +162,7 @@ export function CustomButton(props){
     el.type = 'button';
     el.className = buttonInfo.class;
     el.innerText = buttonInfo.innerText;
+    //el.innerHTML = buttonInfo.innerHTML;
     el.addEventListener('click', function(){
         buttonInfo.click(props);
     });

@@ -23,6 +23,8 @@
       @uncheckAll="onUncheckAll"
       @expand="onExpand"
       @collapse="onCollapse"
+      @editingFinish="editingFinish"
+      @editingStart="onEditingStart"
     >
     </Grid>
   </div>
@@ -45,7 +47,7 @@ export default {
   props: {
     theme: {
       type: [String],
-      default: "clean",
+      default: "default",
     },
     data: {
       type: [Array, Object],
@@ -87,6 +89,10 @@ export default {
       type: [Number, String],
       default: 300,
     },
+
+    editingFinish: {
+      type: [Function],
+    },
   },
   methods: {
     setColumns(columns) {
@@ -103,6 +109,8 @@ export default {
       let grid = this.$refs.tuiGrid;
       grid.invoke("clear");
       grid.invoke("resetData", dataList);
+      debugger;
+      grid.invoke("checkAll");
     },
 
     clearData() {
@@ -177,17 +185,38 @@ export default {
       let grid = this.$refs.tuiGrid;
       grid.invoke("removeTreeRow", rowKey);
     },
+    checkAll() {
+      let grid = this.$refs.tuiGrid,
+        dataList = grid.gridInstance.getData();
+
+      for (let data of dataList) {
+        debugger;
+        let event = new Event("change");
+        let input = grid.gridInstance
+          .getElement(data.rowKey, "_checked")
+          .querySelector("input");
+        input.checked = true;
+        input.dispatchEvent(event);
+      }
+    },
 
     onClick(props) {
       let grid = props.instance,
         rowKey = props.rowKey,
         columnName = "_checked";
+      let gridDataList = props.instance.getData();
 
-      // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
-      if (
+      if (props.rowKey === gridDataList[gridDataList.length - 1].rowKey) {
+        // 마지막일 경우 체크안되도록
+        let event = new Event("change");
+        let input = grid.getElement(rowKey, "_checked").querySelector("input");
+        input.checked = false;
+        input.dispatchEvent(event);
+      } else if (
         columnName != props.columnName &&
         grid.getElement(rowKey, "_checked")
       ) {
+        // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
         let event = new Event("change");
         let input = grid.getElement(rowKey, "_checked").querySelector("input");
         input.checked = true;
@@ -214,7 +243,6 @@ export default {
     onCheckAll(props) {
       let self = this,
         grid = props.instance;
-
       for (let key of grid.getCheckedRowKeys()) {
         grid.addRowClassName(key, self.selectedCSS);
       }
@@ -254,11 +282,26 @@ export default {
     onCollapse() {},
 
     onDebuggerMethod() {},
+    onEditingStart(props) {
+      // 편집 시작시 체크 박스 체크하기
+      let grid = props.instance,
+        rowKey = props.rowKey,
+        columnName = "_checked";
+      if (
+        columnName != props.columnName &&
+        grid.getElement(rowKey, "_checked")
+      ) {
+        // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
+        let event = new Event("change");
+        let input = grid.getElement(rowKey, "_checked").querySelector("input");
+        input.checked = true;
+        input.dispatchEvent(event);
+      }
+    },
 
     getRootElement() {
       return this.$ref.tuiGrid;
     },
-
     invoke(methodName, ...args) {
       let grid = this.$refs.tuiGrid,
         gridInstance = grid.gridInstance;

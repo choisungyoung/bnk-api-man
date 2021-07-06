@@ -2,34 +2,12 @@
   <div @click="bodyClick">
     <prism-editor
       class="my-editor"
-      :tab-size=4
+      :tab-size="4"
       v-model="body"
       :highlight="highlighter"
       :line-numbers="lineNumbers"
     ></prism-editor>
   </div>
-  <!--
-  <div>
-    <h2>vue-code-highlight example</h2>
-    <code-highlight language="javascript">
-      <textarea>
-      var a ;
-      </textarea>
-    </code-highlight>
-  </div>
-  -->
-  <!--
-  <JsonEditor ref="jsonBody" :objData="jsonBody" v-model="jsonBody">
-  </JsonEditor>
-  <v-textarea
-    v-model="jsonBody"
-    :height="height"
-    filled
-    class="ml-5 mr-5 mt-5 mb-5"
-    color="success"
-    @input="myInput"
-  ></v-textarea>
-  -->
 </template>
 
 <script>
@@ -68,7 +46,6 @@ export default {
   },
   mounted() {},
   methods: {
-    
     setBody(value) {
       this.body = JSON.stringify(value, null, 4);
     },
@@ -87,15 +64,15 @@ export default {
     },
 
     bodyClick() {
-      this.$children[0].$refs.textarea.focus()
-    }
+      this.$children[0].$refs.textarea.focus();
+    },
   },
 };
 </script>
 <style>
 div.prism-editor-wrapper {
-  min-height: 300px;
-  max-height: 600px;
+  min-height: 250px;
+  max-height: 250px;
   overflow-y: auto;
 }
 </style>
