@@ -1,6 +1,9 @@
 <template>
-  <v-container>
+  <v-container class="fill-height pa-0">
+    <v-row class="no-gutters flex-wrap flex-column fill-height">
+      <v-col cols="auto" class="shrink">
     <v-app-bar app clipped-right flat height="72">
+      <!--
       <v-responsive max-width="300" class="pt-6">
         <v-text-field
           color="success"
@@ -11,6 +14,7 @@
         >
         </v-text-field>
       </v-responsive>
+      -->
       <v-responsive class="pt-6 ml-3">
         <v-text-field
           color="success"
@@ -32,6 +36,9 @@
         save
       </v-btn>
     </v-app-bar>
+      </v-col>
+      
+      <v-col cols="auto" class="shrink">
     <v-row id="main-content">
       <v-col class="d-flex" cols="2">
         <v-select
@@ -39,6 +46,7 @@
           v-model="method"
           label="METHOD"
           color="success"
+          class="ml-4"
         ></v-select>
       </v-col>
       <v-col cols="10" sm="6" md="">
@@ -62,13 +70,15 @@
         </v-btn>
       </v-col>
     </v-row>
+      </v-col>
 
+      <v-col cols="auto" class="shrink pa-3">
     <v-card elevation="2" height="300px">
       <v-tabs v-model="requestTab" color="success">
         <v-tab v-for="item in requestTabs" :key="item" @click="refreshTabs()">
           {{ item }}
         </v-tab>
-
+        <!--
         <v-btn
           color="blue-grey"
           class="ma-2 white--text mr-12"
@@ -93,6 +103,7 @@
         >
           <v-icon>mdi-arrow-down-bold</v-icon>
         </v-btn>
+        -->
       </v-tabs>
 
       <v-tabs-items v-model="requestTab">
@@ -123,8 +134,10 @@
         </v-tab-item>
       </v-tabs-items>
     </v-card>
-    <br />
-    <v-card elevation="2" height="350px">
+      </v-col>
+    
+      <v-col cols="auto" class="grow pa-3">
+    <v-card elevation="2" height="100%">
       <v-tabs v-model="responseTab" color="success">
         <v-tab v-for="item in responseTabs" :key="item" @click="refreshTabs()">
           {{ item }}
@@ -153,6 +166,9 @@
         </v-tab-item>
       </v-tabs-items>
     </v-card>
+      </v-col>
+    </v-row>
+
   </v-container>
 </template>
 
@@ -301,7 +317,11 @@ export default {
         try {
           requestData.data = requestBody.getBody();
         } catch (e) {
-          console.log(e);
+          this.$toasted.global.errorToast({
+            message: "REQUEST BODY가 JSON형식이 아닙니다.",
+          });
+          loader.hide();
+          return;
         }
       }
 
@@ -317,10 +337,7 @@ export default {
           if (this.isJsonString(response.data)) {
             responseBody.setBody(response.data);
           } else {
-            responseBody.setBody({ body: response.data });
-            this.$toasted.global.errorToast({
-              message: "REQUEST BODY가 JSON형식이 아닙니다.",
-            });
+            responseBody.setTextBody(response.data);
           }
           debugger;
           // 쿠키 추가
@@ -365,14 +382,16 @@ export default {
         });
         return;
       }
+      debugger;
       try {
-        self.$refs.requestBody.getBody();
-      } catch (e) {
-        this.$toasted.global.errorToast({
-          message: "REQUEST BODY가 JSON형식이 아닙니다.",
-        });
-        return;
+        self.$refs.requestBody.getBody()
       }
+      catch (e) {
+          this.$toasted.global.errorToast({
+            message: "REQUEST BODY가 JSON형식이 아닙니다.",
+          });
+          return;
+        }
 
       // Request 테이블에 insert
       DbAccessUtils.saveRequest({
@@ -385,6 +404,7 @@ export default {
 
         requestParameter.blur();
         requestHeader.blur();
+
         await DbAccessUtils.deleteAllRequestDataByRequestId(requestId);
         if (requestBody) {
           // body 저장
@@ -474,7 +494,15 @@ export default {
         }
         let requestBody = {};
 
-        requestBody = JSON.parse(JSON.stringify(refs.requestBody.getBody()));
+        try {
+          requestBody = refs.requestBody.getBody();
+        } catch (e) {
+          this.$toasted.global.errorToast({
+            message: "REQUEST BODY가 JSON형식이 아닙니다.",
+          });
+
+          return;
+        }
         requestBody = self.overwriteJson(requestBody, globalBody);
 
         // 에러가 없을 경우 SetData

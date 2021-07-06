@@ -10,13 +10,6 @@
               </v-icon>
             </v-btn>
           </v-list-item>
-          <v-list-item dense>
-            <v-btn x-small icon color="error" @click="removeData()">
-              <v-icon dark>
-                mdi-minus
-              </v-icon>
-            </v-btn>
-          </v-list-item>
         </v-list>
       </v-col>
       <v-col :cols="setCol">
@@ -39,8 +32,8 @@
 <script>
 import Grid from "@/components/Grid";
 import {
-  CustomSingleCheckboxRowHeaders,
   convertGridDataToJsonData,
+  CustomButton
 } from "@/util/GridUtils";
 export default {
   components: {
@@ -65,9 +58,6 @@ export default {
         {
           type: "checkbox",
           header: "<span/>",
-          renderer: {
-            type: CustomSingleCheckboxRowHeaders,
-          },
         },
       ],
       columns: [
@@ -91,6 +81,20 @@ export default {
           align: "left",
           minWidth: 130,
           editor: editorVal,
+        },
+        {
+          header: "DELETE",
+          name: "delete",
+          align: "left",
+          width: 100,
+          renderer: {
+            type: CustomButton,
+            buttonInfo: {
+              innerText: "삭제",
+              click: self.removeData,
+            }
+          }
+
         },
       ],
     };
@@ -120,10 +124,11 @@ export default {
       parameterGrid.prependRow(data);
     },
 
-    removeData() {
+    removeData(row) {
       let self = this,
         parameterGrid = self.$refs.parameterGrid;
-      parameterGrid.removeRow(self.selectedRow.rowKey);
+      parameterGrid.removeRow(row.rowKey);
+      
     },
 
     refreshLayout() {

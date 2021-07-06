@@ -1,10 +1,13 @@
 <template>
-  <prism-editor
-    class="my-editor"
-    v-model="body"
-    :highlight="highlighter"
-    :line-numbers="lineNumbers"
-  ></prism-editor>
+  <div @click="bodyClick">
+    <prism-editor
+      class="my-editor"
+      :tab-size=4
+      v-model="body"
+      :highlight="highlighter"
+      :line-numbers="lineNumbers"
+    ></prism-editor>
+  </div>
   <!--
   <div>
     <h2>vue-code-highlight example</h2>
@@ -49,7 +52,7 @@ export default {
 
   data() {
     return {
-      body: "",
+      body: "{}",
       lineNumbers: true,
     };
   },
@@ -65,11 +68,15 @@ export default {
   },
   mounted() {},
   methods: {
+    
     setBody(value) {
       this.body = JSON.stringify(value, null, 4);
     },
     getBody() {
       return JSON.parse(this.body);
+    },
+    setTextBody(text) {
+      this.body = text;
     },
 
     myInput(value) {
@@ -78,12 +85,17 @@ export default {
     highlighter(code) {
       return highlight(code, languages.json); // languages.<insert language> to return html with markup
     },
+
+    bodyClick() {
+      this.$children[0].$refs.textarea.focus()
+    }
   },
 };
 </script>
 <style>
 div.prism-editor-wrapper {
-  max-height: 230px;
+  min-height: 300px;
+  max-height: 600px;
   overflow-y: auto;
 }
 </style>

@@ -1,11 +1,5 @@
 <template>
   <v-app id="inspire">
-    <v-system-bar app>
-      <v-spacer></v-spacer>
-      BNKMAN
-      <v-spacer></v-spacer>
-    </v-system-bar>
-
     <v-navigation-drawer
       v-model="leftDrawer"
       app
@@ -216,7 +210,15 @@ export default {
           globalData.header = globalHeader.getGridData();
         }
         if (globalBody) {
-          globalData.body = JSON.stringify(globalBody.getBody());
+          try {
+            globalData.body = JSON.stringify(globalBody.getBody());
+          } catch(e) {
+            this.$toasted.global.errorToast({
+              message: "GLOBAL BODY가 JSON형식이 아닙니다.",
+            });
+            debugger;
+            return true;
+          }
           var bodyData = {};
           bodyData.value = globalData.body;
           bodyData.type = Constants.DATA_TYPE.BODY;
@@ -240,6 +242,12 @@ export default {
         }
         this.$toasted.global.successToast();
       } else {
+
+        // grid 초기화
+        globalParameter.clearData();
+        globalHeader.clearData();
+        this.$refs.globalBody.setBody({});
+
         // 열릴때 DB 데이터 로드
         DbAccessUtils.findAllGlobalDataByType(
           Constants.DATA_TYPE.PARAMETER
