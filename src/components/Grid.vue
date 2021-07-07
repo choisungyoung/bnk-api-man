@@ -124,6 +124,11 @@ export default {
 
       grid.invoke("refreshLayout");
     },
+    getCheckedRows() {
+      let grid = this.$refs.tuiGrid;
+      debugger;
+      return grid.invoke("getCheckedRows");
+    },
 
     getCreatedRows() {
       let grid = this.$refs.tuiGrid;
@@ -184,20 +189,6 @@ export default {
     removeTreeRow(rowKey) {
       let grid = this.$refs.tuiGrid;
       grid.invoke("removeTreeRow", rowKey);
-    },
-    checkAll() {
-      let grid = this.$refs.tuiGrid,
-        dataList = grid.gridInstance.getData();
-
-      for (let data of dataList) {
-        debugger;
-        let event = new Event("change");
-        let input = grid.gridInstance
-          .getElement(data.rowKey, "_checked")
-          .querySelector("input");
-        input.checked = true;
-        input.dispatchEvent(event);
-      }
     },
 
     onClick(props) {

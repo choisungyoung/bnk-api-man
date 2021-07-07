@@ -212,7 +212,7 @@ export default {
 
       id: null,
       method: null,
-      url: "http://localhost:9999/FW/api/v1/login",
+      url: "",
       name: "",
 
       /* REQUEST */
@@ -319,10 +319,10 @@ export default {
       setTimeout(() => {}, 5000);
       // request grid 데이터 로드
       if (requestParameter) {
-        requestData.params = requestParameter.getParameter();
+        requestData.params = requestParameter.getCheckedParameter();
       }
       if (requestHeader) {
-        requestData.headers = requestHeader.getHeader();
+        requestData.headers = requestHeader.getCheckedHeader();
       }
       if (requestBody) {
         try {

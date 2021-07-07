@@ -17,7 +17,6 @@
 <script>
 import Grid from "@/components/Grid";
 import {
-  CustomSingleCheckboxRowHeaders,
   convertGridDataToJsonData,
   convertJsonDataToGridData,
   CustomButton,
@@ -42,9 +41,6 @@ export default {
         {
           type: "checkbox",
           header: "<span/>",
-          renderer: {
-            type: CustomSingleCheckboxRowHeaders,
-          },
         },
       ],
       columns: [
@@ -104,6 +100,18 @@ export default {
       }
       return convertGridDataToJsonData(gridDataList);
     },
+
+    getCheckedHeader() {
+      let self = this,
+        headerGrid = self.$refs.headerGrid,
+        gridDataList = headerGrid.getCheckedRows();
+
+      if (gridDataList.length <= 0) {
+        return null;
+      }
+      return convertGridDataToJsonData(gridDataList);
+    },
+
     setHeader(jsonData) {
       let self = this,
         headerGrid = self.$refs.headerGrid;

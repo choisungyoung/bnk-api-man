@@ -96,6 +96,17 @@ export default {
       return convertGridDataToJsonData(gridDataList);
     },
 
+    getCheckedParameter() {
+      let self = this,
+        parameterGrid = self.$refs.parameterGrid,
+        gridDataList = parameterGrid.getCheckedRows();
+
+      if (gridDataList.length <= 0) {
+        return null;
+      }
+      return convertGridDataToJsonData(gridDataList);
+    },
+
     createData() {
       let self = this,
         parameterGrid = self.$refs.parameterGrid;
