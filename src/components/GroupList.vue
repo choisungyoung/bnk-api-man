@@ -195,7 +195,6 @@ export default {
     },
     createRequest() {
       var self = this;
-      debugger;
       DbAccessUtils.saveRequest({
         name: "New Request",
         method: "GET",
@@ -259,11 +258,9 @@ export default {
             for (var requestData of inputJson.requestData) {
               await utils.saveRequestData(requestData);
             }
-            debugger;
             for (var globalData of inputJson.globalData) {
               await utils.saveGlobalData(globalData);
             }
-            debugger;
           } catch (e) {
             self.$toasted.global.errorToast("입력파일이 JSON형식이 아닙니다.");
             return;

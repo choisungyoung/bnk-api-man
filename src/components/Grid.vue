@@ -109,7 +109,6 @@ export default {
       let grid = this.$refs.tuiGrid;
       grid.invoke("clear");
       grid.invoke("resetData", dataList);
-      debugger;
       grid.invoke("checkAll");
     },
 
@@ -126,7 +125,6 @@ export default {
     },
     getCheckedRows() {
       let grid = this.$refs.tuiGrid;
-      debugger;
       return grid.invoke("getCheckedRows");
     },
 

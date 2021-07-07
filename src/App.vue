@@ -151,7 +151,7 @@ export default {
 
   data: () => ({
     listDvcd: Constants.LIST_DVCD.REQUEST,
-    listTitle: "Request 목록",
+    listTitle: "Request",
 
     leftDrawer: true,
     rightDrawer: false,
@@ -165,7 +165,7 @@ export default {
     tabs: [
       {
         listDvcd: Constants.LIST_DVCD.REQUEST,
-        listTitle: "Request 목록",
+        listTitle: "Request",
         iconName: "mdi-send",
       },
       {
@@ -216,7 +216,6 @@ export default {
             this.$toasted.global.errorToast({
               message: "GLOBAL BODY가 JSON형식이 아닙니다.",
             });
-            debugger;
             return true;
           }
           var bodyData = {};

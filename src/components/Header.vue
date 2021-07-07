@@ -143,7 +143,7 @@ export default {
         return;
       }
 
-      headerGrid.removeRow(self.selectedRow.rowKey);
+      headerGrid.removeRow(row.rowKey);
     },
 
     refreshLayout() {

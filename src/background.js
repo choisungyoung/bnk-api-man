@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, session } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -10,12 +10,25 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
+
+function configureSession(){
+	const filter = { urls: ["http://*/*", "https://*/*"] };
+	
+	session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
+		const cookies = details.responseHeaders['Set-Cookie'];
+    console.log(details);
+    details.responseHeaders.cookies = cookies;
+		callback({ cancel: false, responseHeaders: details.responseHeaders });
+	});
+}
 async function createWindow() {
+  configureSession();
   // Create the browser window.
   const win = new BrowserWindow({
     minWidth: 1300,
     minHeight: 975,
     center:true,
+    autoHideMenuBar: true,
     webPreferences: {
       
       // Use pluginOptions.nodeIntegration, leave this alone

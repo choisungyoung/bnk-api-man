@@ -114,16 +114,6 @@
           <v-tabs-items v-model="requestTab">
             <v-tab-item eager>
               <v-card flat max-height="250px">
-                <Parameter
-                  ref="requestParameter"
-                  :data="requestParameter"
-                  :height="180"
-                  :dvcd="'edit'"
-                />
-              </v-card>
-            </v-tab-item>
-            <v-tab-item eager>
-              <v-card flat max-height="250px">
                 <Header
                   ref="requestHeader"
                   :data="requestHeader"
@@ -135,6 +125,16 @@
             <v-tab-item eager>
               <v-card flat>
                 <Body ref="requestBody" v-model="requestBody" :height="180" />
+              </v-card>
+            </v-tab-item>
+            <v-tab-item eager>
+              <v-card flat max-height="250px">
+                <Parameter
+                  ref="requestParameter"
+                  :data="requestParameter"
+                  :height="180"
+                  :dvcd="'edit'"
+                />
               </v-card>
             </v-tab-item>
           </v-tabs-items>
@@ -206,7 +206,7 @@ export default {
     return {
       methodItems: ["GET", "POST"],
       requestTab: null,
-      requestTabs: ["params", "header", "body"],
+      requestTabs: ["header", "body", "params"],
       responseTab: null,
       responseTabs: ["body", "cookies", "header"],
 
@@ -345,16 +345,21 @@ export default {
       Request(requestData).then(
         (response) => {
           responseHeader.setHeader(response.headers);
-          if (this.isJsonString(response.data)) {
+          debugger;
+          if (typeof response.data === 'object') {
             responseBody.setBody(response.data);
           } else {
             responseBody.setTextBody(response.data);
           }
+          console.log('response', response);
           // 쿠키 추가
+          // Query all cookies.
+          debugger;
           loader.hide();
         },
         (error) => {
           responseBody.setBody(error);
+          console.log('response error', error);
           loader.hide();
         }
       );
