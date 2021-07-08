@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, session } from 'electron'
+import { app, protocol, BrowserWindow, session, ipcMain  } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -10,19 +10,19 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
+ipcMain.on('getCookies', async (event, url) => {
+  var domainCookies = [];
+  await session.defaultSession.cookies.get({ url: url })
+    .then((cookies) => {
+      domainCookies =cookies; 
+    }).catch((error) => {
+      console.log(error)
+    })
+    event.returnValue = domainCookies;
+    console.log("getCookies", domainCookies);
+})
 
-function configureSession(){
-	const filter = { urls: ["http://*/*", "https://*/*"] };
-	
-	session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
-		const cookies = details.responseHeaders['Set-Cookie'];
-    console.log(details);
-    details.responseHeaders.cookies = cookies;
-		callback({ cancel: false, responseHeaders: details.responseHeaders });
-	});
-}
 async function createWindow() {
-  configureSession();
   // Create the browser window.
   const win = new BrowserWindow({
     minWidth: 1300,
@@ -33,9 +33,12 @@ async function createWindow() {
       
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      //nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      //contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
 
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: false, // turn off remote
       //CORS 설정
       webSecurity: false,
     }

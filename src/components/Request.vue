@@ -65,6 +65,7 @@
               @click="requestApi()"
               min-width="100"
               max-width="200"
+              :disabled="!isValidRequestUrl"
             >
               Send
               <i class="fa fa-spinner fa-spin"></i>
@@ -151,6 +152,14 @@
             >
               {{ item }}
             </v-tab>
+            
+            <v-container>
+                <div align="right" class="body-2">
+                  <span class="grey--text">Status : </span>{{responseStatus}} {{getResponseStatusText}}&nbsp;&nbsp;
+                  <span class="grey--text">Time : </span>{{responseTime}}ms &nbsp;&nbsp;
+                  <span class="grey--text"> Size : </span>{{responseSize}}KB
+                </div>
+            </v-container>
           </v-tabs>
 
           <v-tabs-items v-model="responseTab">
@@ -161,10 +170,10 @@
             </v-tab-item>
             <v-tab-item eager>
               <v-card flat>
-                <Parameter
+                <Cookie
                   ref="responseCookie"
                   :data="responseCookie"
-                  :height="210"
+                  :height="400"
               /></v-card>
             </v-tab-item>
             <v-tab-item eager>
@@ -172,7 +181,7 @@
                 <Header
                   ref="responseHeader"
                   v-model="responseHeader"
-                  :height="210"
+                  :height="400"
                 />
               </v-card>
             </v-tab-item>
@@ -187,19 +196,21 @@
 import Parameter from "@/components/Parameter";
 import Header from "./Header.vue";
 import Body from "./Body.vue";
+import Cookie from "./Cookie.vue";
 import Request from "@/Request";
 import DbAccessUtils from "@/util/DbAccessUtils";
 //import { convertGridDataToJsonData } from "@/util/GridUtils";
 import EventBus from "@/util/EventBus";
 import Constants from "@/constants";
 import { convertJsonDataToGridData } from "@/util/GridUtils";
-
+import { ipcRenderer } from 'electron'
 export default {
   name: "Request",
   components: {
     Parameter,
     Header,
     Body,
+    Cookie,
   },
 
   data() {
@@ -227,10 +238,27 @@ export default {
 
       /* ADD된 상태인지 */
       isAddGlobalData: false,
+
+      /* response status */
+      responseStatus : "0",
+      responseStatusText : "",
+      responseTime : "0",
+      responseSize : "0"
     };
   },
 
+  computed: {
+    getResponseStatusText() {
+      return  this.responseStatusText ? "(" + this.responseStatusText + ")" : "";
+    },
+    isValidRequestUrl() {
+      let url = this.url;
+      let urlRegExp = '(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})';
+      return url && url.match(new RegExp(urlRegExp));
+    }
+  },
   created() {},
+  
   mounted() {
     var self = this;
     EventBus.$on("request:initRequestData", (requestId) => {
@@ -340,8 +368,9 @@ export default {
 
       //Request 실행
       let responseHeader = self.$refs.responseHeader,
-        responseBody = self.$refs.responseBody;
-
+        responseBody = self.$refs.responseBody,
+        responseCookie = self.$refs.responseCookie;
+      var startTime = new Date().getTime();
       Request(requestData).then(
         (response) => {
           responseHeader.setHeader(response.headers);
@@ -351,15 +380,24 @@ export default {
           } else {
             responseBody.setTextBody(response.data);
           }
-          console.log('response', response);
-          // 쿠키 추가
-          // Query all cookies.
           debugger;
+          let cookies = ipcRenderer.sendSync('getCookies', response.config.url);
+          responseCookie.setGridData(cookies);
           loader.hide();
+          
+          var endTime = new Date().getTime();
+          self.responseTime=endTime - startTime;
+          self.responseStatus = response.request.status
+          self.responseStatusText = response.request.statusText
+          self.responseSize = (JSON.stringify(response).length / 1000).toFixed(2);
         },
         (error) => {
+          debugger;
           responseBody.setBody(error);
-          console.log('response error', error);
+          var endTime = new Date().getTime();
+          self.responseTime=endTime - startTime;
+          self.responseStatus = error.request.status
+          self.responseStatusText = error.request.statusText
           loader.hide();
         }
       );
@@ -475,6 +513,11 @@ export default {
       refs.responseHeader.clearData();
       refs.responseCookie.clearData();
       refs.responseBody.setBody({});
+
+      self.responseStatus = "0";
+      self.responseStatusText = "";
+      self.responseTime = "0";
+      self.responseSize = "0";
       self.refreshTabs();
     },
 
@@ -540,6 +583,7 @@ export default {
         requestHeader = self.$refs.requestHeader,
         responseCookie = self.$refs.responseCookie,
         responseHeader = self.$refs.responseHeader;
+
       setTimeout(() => {
         requestParameter.refreshLayout();
         requestHeader.refreshLayout();

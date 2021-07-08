@@ -9,6 +9,7 @@
       :rowHeaders="gridOpts.rowHeaders"
       :summary="gridOpts.summary"
       :editingFinish="editingFinish"
+      :draggable="isEditMode"
       v-model="selectedRow"
     ></Grid>
   </v-container>
@@ -26,7 +27,12 @@ export default {
     Grid,
   },
   props: ["data", "height", "dvcd"],
-  computed: {},
+  computed: {
+    isEditMode() {
+      let self = this;
+      return self.dvcd === "edit"
+    }
+  },
   created() {
     let self = this,
       editorVal = self.dvcd === "edit" ? "text" : null;

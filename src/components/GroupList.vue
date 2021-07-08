@@ -91,7 +91,7 @@
                 <v-row no-gutters>
                   <v-col cols="12" sm="6" md="" align-self="center">
                     <span
-                      style="width: 200px;display: block;overflow: hidden;text-overflow: ellipsis; white-space: nowrap; "
+                      style="width: 190px;display: block;overflow: hidden;text-overflow: ellipsis; white-space: nowrap; "
                     >
                       {{ item.name }}
                     </span>
@@ -228,7 +228,7 @@ export default {
       document.getElementById("fileUpload").click();
     },
 
-    loadFile() {
+    loadFile(event) {
       let self = this;
       console.log(event.target.files[0]);
       let file = event.target.files[0];
@@ -284,7 +284,6 @@ export default {
       outputJson.requestData = await DbAccessUtils.findAllRequestDataByRequestId();
       outputJson.globalData = await DbAccessUtils.findAllGlobalData();
 
-      this.$toasted.global.successToast();
       const data = JSON.stringify(outputJson);
       const blob = new Blob([data], { type: "text/plain" });
       const e = document.createEvent("MouseEvents"),

@@ -5,7 +5,8 @@
         -->
     <Grid
       ref="tuiGrid"
-      rowHeight="auto"
+      :rowHeight="rowHeight"
+      :minRowHeight="minRowHeight"
       :data="data"
       :rowHeaders="rowHeaders"
       :columns="columns"
@@ -16,6 +17,7 @@
       :language="language"
       :bodyHeight="bodyHeight"
       :showDummyRows="true"
+      :draggable="draggable"
       @click="onClick"
       @check="onCheck"
       @checkAll="onCheckAll"
@@ -25,6 +27,8 @@
       @collapse="onCollapse"
       @editingFinish="editingFinish"
       @editingStart="onEditingStart"
+      @dragStart="onDragStart"
+      @drop="onDrop"
     >
     </Grid>
   </div>
@@ -45,6 +49,14 @@ export default {
     };
   },
   props: {
+    rowHeight: {
+      type: [String, Number],
+      default: "auto",
+    },
+    minRowHeight: {
+      type: [String, Number],
+      default: "35",
+    },
     theme: {
       type: [String],
       default: "default",
@@ -89,9 +101,17 @@ export default {
       type: [Number, String],
       default: 300,
     },
+    draggable: {
+      type: [Boolean],
+      default: true,
+    },
 
     editingFinish: {
       type: [Function],
+      
+      default: ()=> {
+
+      }
     },
   },
   methods: {
@@ -195,21 +215,23 @@ export default {
         columnName = "_checked";
       let gridDataList = props.instance.getData();
 
-      if (props.rowKey === gridDataList[gridDataList.length - 1].rowKey) {
-        // 마지막일 경우 체크안되도록
-        let event = new Event("change");
-        let input = grid.getElement(rowKey, "_checked").querySelector("input");
-        input.checked = false;
-        input.dispatchEvent(event);
-      } else if (
-        columnName != props.columnName &&
-        grid.getElement(rowKey, "_checked")
-      ) {
-        // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
-        let event = new Event("change");
-        let input = grid.getElement(rowKey, "_checked").querySelector("input");
-        input.checked = true;
-        input.dispatchEvent(event);
+      if (grid.getElement(rowKey, "_checked")) {
+        if (props.rowKey === gridDataList[gridDataList.length - 1].rowKey) {
+          // 마지막일 경우 체크안되도록
+          let event = new Event("change");
+          let input = grid.getElement(rowKey, "_checked").querySelector("input");
+          input.checked = false;
+          input.dispatchEvent(event);
+        } else if (
+          columnName != props.columnName &&
+          grid.getElement(rowKey, "_checked")
+        ) {
+          // Row를 클릭할 때 rowHeader 체크를 시키기 위한 로직
+          let event = new Event("change");
+          let input = grid.getElement(rowKey, "_checked").querySelector("input");
+          input.checked = true;
+          input.dispatchEvent(event);
+        }
       }
     },
 
@@ -287,7 +309,25 @@ export default {
         input.dispatchEvent(event);
       }
     },
+    onDrop(gridEvent) {
+      let gridDataList = gridEvent.instance.getData(),
+      lastGridData = gridDataList[gridDataList.length - 1];
 
+      if (gridEvent.rowKey === lastGridData.rowKey) {
+        // 마지막 행으로 드랍될 경우 마지막 앞 행으로 
+        let data = gridDataList.pop();
+        gridDataList.splice(gridDataList.length-1, 0, data);
+      }
+      gridEvent.instance.resetData(gridDataList);
+      gridEvent.stopped = true;
+    },
+    onDragStart(gridEvent) {
+      let gridDataList = gridEvent.instance.getData();
+      if (gridEvent.rowKey === gridDataList[gridDataList.length - 1].rowKey) {
+        // 마지막일 경우 드레그 안되도록
+        gridEvent.stopped = true;
+      } 
+    },
     getRootElement() {
       return this.$ref.tuiGrid;
     },
