@@ -1,12 +1,18 @@
 <template>
-  <div @click="bodyClick">
-    <prism-editor
-      class="my-editor"
-      :tab-size="4"
-      v-model="body"
-      :highlight="highlighter"
-      :line-numbers="lineNumbers"
-    ></prism-editor>
+  <div>
+    <div @click="bodyClick">
+      <prism-editor
+        class="my-editor"
+        :tab-size="4"
+        v-model="body"
+        :highlight="highlighter"
+        :line-numbers="lineNumbers"
+        @keyup="inputText"
+      ></prism-editor>
+    </div>
+    <div align="right" class="mr-2 body-2" v-if="isEdit">
+      <span class="red--text">{{bodyMessage}}</span>
+    </div>
   </div>
 </template>
 
@@ -22,7 +28,7 @@ import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-json";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
 export default {
-  props: ["height"],
+  props: ["height", "dvcd"],
   components: {
     PrismEditor,
   },
@@ -32,6 +38,9 @@ export default {
     return {
       body: "{}",
       lineNumbers: true,
+      
+      /** requestBodyMessage */
+      bodyMessage: "",
     };
   },
   computed: {
@@ -43,6 +52,9 @@ export default {
         this.body = value;
       },
     },
+    isEdit(){
+      return this.dvcd == 'edit'
+    }
   },
   mounted() {},
   methods: {
@@ -66,13 +78,29 @@ export default {
     bodyClick() {
       this.$children[0].$refs.textarea.focus();
     },
+    inputText() {
+      let self = this;
+      clearTimeout(this.debounce); 
+      this.debounce = setTimeout(() => { 
+        try {
+          console.log(JSON.parse(self.body));
+          self.setBody(JSON.parse(self.body));
+          self.bodyMessage = "";
+        }
+        catch (e) {
+          if (self.dvcd === "edit") {
+            self.bodyMessage = "JSON형식이 아닙니다.";
+          }
+        }
+      }, 2000);
+    }
   },
 };
 </script>
 <style>
 div.prism-editor-wrapper {
-  min-height: 250px;
-  max-height: 250px;
+  min-height: 220px;
+  max-height: 220px;
   overflow-y: auto;
 }
 </style>

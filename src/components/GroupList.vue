@@ -3,7 +3,7 @@
     <v-sheet class="pa-4 grey lighten-1">
       <v-text-field
         v-model="search"
-        label="Search Company Directory"
+        label="Search"
         dark
         dense
         flat
@@ -18,6 +18,7 @@
         dark
         hide-details
         label="Case sensitive search"
+        v-show="false"
       ></v-checkbox>
     </v-sheet>
     <v-card-text>
@@ -76,22 +77,41 @@
         :search="search"
         :filter="filter"
         :open.sync="open"
+        :active.sync="active"
         open-on-click
         activatable
         color="success"
         @update:active="selectRequest"
+        ref="treeview"
       >
-        <template slot="label" slot-scope="{ item }">
-          <div v-if="item.children">
+      <template slot="label" slot-scope="{ item }">
+        
+        <draggable 
+          class="dragArea list-group"
+          :list="items" 
+          :id="item.id"
+          @start="checkStart"
+          @end="checkEnd"
+          v-bind="dragOptions">
+          <div v-if="item.children">  
             {{ item.name }}
           </div>
-          <div v-else>
+          <div v-else> 
             <v-hover v-slot:default="{ hover }">
               <div>
-                <v-row no-gutters>
+                <v-row no-gutters justify="center" align="center">
+                  
+                  <v-col cols="auto">
+                    <div :class="getMethodClassName(item.method)" >
+                      <span style="font-size: 11px;vertical-align: middle;">
+                        {{ item.method }} &nbsp;
+                      </span>
+                    </div>
+                  </v-col>
                   <v-col cols="12" sm="6" md="" align-self="center">
+                    
                     <span
-                      style="width: 190px;display: block;overflow: hidden;text-overflow: ellipsis; white-space: nowrap; "
+                      style="width: 170px;display:block;overflow: hidden;text-overflow: ellipsis; white-space: nowrap; "
                     >
                       {{ item.name }}
                     </span>
@@ -105,7 +125,7 @@
                           </v-btn>
                         </template>
 
-                        <v-list>
+                        <v-list dense>
                           <v-list-item
                             link
                             icon
@@ -114,7 +134,7 @@
                             v-show="isRequest"
                           >
                             <v-list-item-icon>
-                              <v-icon>mdi-content-copy</v-icon>
+                              <v-icon small>mdi-content-copy</v-icon>
                             </v-list-item-icon>
                             <v-list-item-title>duplicate</v-list-item-title>
                           </v-list-item>
@@ -126,9 +146,11 @@
                             @click="deleteRequest(item)"
                           >
                             <v-list-item-icon>
-                              <v-icon>mdi-delete</v-icon>
+                              <v-icon small>mdi-delete</v-icon>
                             </v-list-item-icon>
-                            <v-list-item-title>delete</v-list-item-title>
+                            <v-list-item-content>
+                              <v-list-item-subtitle >delete</v-list-item-subtitle >
+                            </v-list-item-content>
                           </v-list-item>
                         </v-list>
                       </v-menu>
@@ -138,7 +160,8 @@
               </div>
             </v-hover>
           </div>
-        </template>
+          </draggable>
+      </template>
       </v-treeview>
     </v-card-text>
   </v-card>
@@ -148,14 +171,21 @@
 import DbAccessUtils from "@/util/DbAccessUtils";
 import EventBus from "@/util/EventBus";
 import Constants from "@/constants";
+import draggable from 'vuedraggable'
 
 export default {
+  components: {
+      draggable,
+  },
   props: ["listDvcd", "listTitle"],
   data: () => ({
     items: [],
+    active: [],
     open: [],
-    search: null,
+    search: "",
     caseSensitive: false,
+    drag: false,
+    selectedItem: 1,
   }),
   computed: {
     filter() {
@@ -165,6 +195,23 @@ export default {
     },
     isRequest() {
       return this.listDvcd === Constants.LIST_DVCD.REQUEST ? true : false;
+    },
+    filteItems :{
+      set : function(items) {
+        this.items = items;
+      },
+      get : function() {
+        let self = this;
+        return self.getFiltedItems(self.items);
+      }
+    } ,
+    dragOptions() {
+      return {
+        animation: 200,
+        group: "description",
+        disabled: false,
+        ghostClass: "ghost"
+      };
     },
   },
   created() {},
@@ -185,8 +232,11 @@ export default {
 
   methods: {
     selectRequest(props) {
+      debugger;
       let id = props[0];
       let self = this;
+      self.active = [];
+      //self.active.push(props);
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
         EventBus.$emit("request:initRequestData", id);
       } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
@@ -319,6 +369,8 @@ export default {
             var item = {
               id: row.id,
               name: row.name,
+              method: row.method,
+              parentId: null,
             };
 
             self.items.push(item);
@@ -351,6 +403,7 @@ export default {
             children.push({
               id: row.id,
               name: row.url,
+              method: row.method,
             });
 
             if (index == array.length - 1) {
@@ -366,6 +419,104 @@ export default {
         });
       }
     },
+
+    getFiltedItems(items) {
+      let self = this,
+        itemList = JSON.parse(JSON.stringify(items)), //깊은 복사
+        filtedItmes = [];
+      for (let item of itemList) {
+        if (item.children) {
+          item.children = self.getFiltedItems(item.children);
+          filtedItmes.push(item);
+          continue;
+        } 
+
+        if (item.name.toLowerCase().includes(self.search.toLowerCase())) {
+          filtedItmes.push(item);
+        }
+      }
+      return filtedItmes;
+    },
+    
+    findTreeItem: function (items, id) {
+      if (!items) {
+          return;
+      }
+      for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          // Test current object
+          if (item.id.toString() === id) {
+              return item;
+          }
+          // Test children recursively
+          const child = this.findTreeItem(item.children, id);
+          if (child) {
+              return child;
+          }
+      }
+    },
+    checkStart: function (evt) {
+        var self = this;
+        self.active = [];
+        self.active.push(self.findTreeItem(self.items, evt.from.id));
+        self.drag = true;
+    },
+    checkEnd: function (evt) {
+        var self = this;
+        
+        if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
+          var itemSelected = self.active[0];
+          var fromParent = itemSelected.parentId ? self.findTreeItem(self.items, itemSelected.parentId) : null;
+          
+          var toItem = self.findTreeItem(self.items, evt.to.id);
+          var toParent = toItem.parentId ? self.findTreeItem(self.items, itemSelected.parentId) : null;
+          
+          var objFrom = fromParent ? fromParent.children : self.items;
+          var objTo = toParent ? toParent.children : self.items;
+
+          objFrom.splice(objFrom.indexOf(itemSelected), 1);
+          if (evt.newIndex == 1) {
+            // 밑으로 드래그 end되었을 경우
+            objTo.splice(objTo.indexOf(toItem)+1,0,itemSelected);
+          } else {
+            objTo.splice(objTo.indexOf(toItem),0,itemSelected);
+          }
+
+          // 목록 정렬 저장 (Tree 고려 X)
+          var index = 0;
+          for (let item of self.items) {
+            item.sort = index++;
+            DbAccessUtils.updateRequestSort(item);
+          }
+
+          this.$toasted.global.successToast();
+        }
+        
+        self.drag = false;
+        return false;
+    },
+    
+    getMethodClassName(method) {
+      let className = "";
+      if (Constants.REQUEST_METHOD.GET == method) {
+        className = "yellow"
+      } else if (Constants.REQUEST_METHOD.POST == method) {
+        className = "green"
+      } else {
+        className = "grey";
+      }
+      return className + "--text";
+    }
   },
 };
 </script>
+<style>
+.v-treeview-node__root {
+  min-height: 35px;
+}
+.handle {
+  float: left;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+</style>

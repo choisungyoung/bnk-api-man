@@ -10,7 +10,10 @@ import 'vue-loading-overlay/dist/vue-loading.css';
 import VuetifyDialog from 'vuetify-dialog'
 import { PrismEditor } from 'vue-prism-editor';
 import 'vue-prism-editor/dist/prismeditor.min.css'; // import the styles
+import VuetifyDraggableTreeview from 'vuetify-draggable-treeview'
 
+//draggable tree view
+Vue.use(VuetifyDraggableTreeview)
 Vue.component('PrismEditor', PrismEditor);
 
 Vue.config.productionTip = false;

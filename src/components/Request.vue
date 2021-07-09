@@ -125,7 +125,7 @@
             </v-tab-item>
             <v-tab-item eager>
               <v-card flat>
-                <Body ref="requestBody" v-model="requestBody" :height="180" />
+                <Body ref="requestBody" v-model="requestBody" :height="180" :dvcd="'edit'"/>
               </v-card>
             </v-tab-item>
             <v-tab-item eager>
@@ -243,7 +243,7 @@ export default {
       responseStatus : "0",
       responseStatusText : "",
       responseTime : "0",
-      responseSize : "0"
+      responseSize : "0",
     };
   },
 
@@ -374,13 +374,13 @@ export default {
       Request(requestData).then(
         (response) => {
           responseHeader.setHeader(response.headers);
-          debugger;
+          
           if (typeof response.data === 'object') {
             responseBody.setBody(response.data);
           } else {
             responseBody.setTextBody(response.data);
           }
-          debugger;
+          
           let cookies = ipcRenderer.sendSync('getCookies', response.config.url);
           responseCookie.setGridData(cookies);
           loader.hide();
@@ -392,7 +392,6 @@ export default {
           self.responseSize = (JSON.stringify(response).length / 1000).toFixed(2);
         },
         (error) => {
-          debugger;
           responseBody.setBody(error);
           var endTime = new Date().getTime();
           self.responseTime=endTime - startTime;

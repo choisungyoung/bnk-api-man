@@ -10,5 +10,10 @@ export default Object.freeze({
   LIST_DVCD: {
     REQUEST:"01",
     HISTORY:"02"
+  },
+
+  REQUEST_METHOD: {
+    GET:"GET",
+    POST:"POST",
   }
 })

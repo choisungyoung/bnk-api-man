@@ -16,7 +16,7 @@ export default {
       let db = conn()
       db.serialize(() => {
         db.run('CREATE TABLE IF NOT EXISTS GLOBAL_DATA (id INTEGER PRIMARY KEY AUTOINCREMENT, type CHAR(2), key VARCHAR(100), value VARCHAR(2000), description VARCHAR(200))');
-        db.run('CREATE TABLE IF NOT EXISTS REQUEST (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100), method VARCHAR(10), url VARCHAR(2000))');
+        db.run('CREATE TABLE IF NOT EXISTS REQUEST (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(100), method VARCHAR(10), url VARCHAR(2000), sort INTEGER)');
         db.run('CREATE TABLE IF NOT EXISTS REQUEST_DATA (id INTEGER PRIMARY KEY AUTOINCREMENT, requestId INTEGER, type CHAR(2), key VARCHAR(100), value VARCHAR(2000), description VARCHAR(200))');
         db.run('CREATE TABLE IF NOT EXISTS REQUEST_HISTORY (id INTEGER PRIMARY KEY AUTOINCREMENT, method VARCHAR(10), url VARCHAR(2000), requestParameter VARCHAR(2000), requestHeader VARCHAR(2000), requestBody VARCHAR(2000), requestDtti TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)');
         
@@ -33,6 +33,7 @@ export default {
       if (id) {
         sql += " WHERE id=" + id;
       }
+      sql += " ORDER BY sort"
       db.all(sql, (err, rows) => {
         if (err) {
           reject(err)
@@ -54,7 +55,7 @@ export default {
       }
       else {
         // INSERT
-        let prepare = db.prepare('REPLACE INTO REQUEST (name, method, url) VALUES (?, ?, ?)')
+        let prepare = db.prepare('REPLACE INTO REQUEST (name, method, url, sort) VALUES (?, ?, ?, (SELECT seq FROM sqlite_sequence WHERE name=\'REQUEST\')+1)')
         prepare.run(request.name, request.method, request.url, function(err) {
           if (!err) resolve(this.lastID)
         })
@@ -66,8 +67,8 @@ export default {
     return new Promise((resolve) => {
       let db = conn()
       // INSERT
-      let prepare = db.prepare('REPLACE INTO REQUEST (id, name, method, url) VALUES (?, ?, ?, ?)')
-      prepare.run(request.id, request.name, request.method, request.url, function(err) {
+      let prepare = db.prepare('REPLACE INTO REQUEST (id, name, method, url, sort) VALUES (?, ?, ?, ?, ?)')
+      prepare.run(request.id, request.name, request.method, request.url, request.sort, function(err) {
         if (!err) resolve(this.lastID)
       })
     })
@@ -102,11 +103,22 @@ export default {
   duplicateRequestById(id) {
     return new Promise((resolve, reject) => {
       let db = conn()
-      var sql  = "INSERT INTO REQUEST(name, method, url) SELECT  name || \"_복사본\", method, url FROM REQUEST WHERE id=?";
+      var sql  = "INSERT INTO REQUEST(name, method, url, sort) SELECT  name || \"_복사본\", method, url, (SELECT seq FROM sqlite_sequence WHERE name=\'REQUEST\')+1 FROM REQUEST WHERE id=?";
       let prepare = db.prepare(sql)
       prepare.run(id, function(err) {
         if (!err) resolve(this.lastID)
         reject(err)
+      })
+    })
+  },
+
+  updateRequestSort(request) {
+    return new Promise((resolve) => {
+      let db = conn()
+      // UPDATE
+      let prepare = db.prepare('UPDATE REQUEST SET sort=? WHERE id=?')
+      prepare.run(request.sort, request.id, function(err) {
+        if (!err) resolve(request.id)
       })
     })
   },

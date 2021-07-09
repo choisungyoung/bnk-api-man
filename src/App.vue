@@ -170,7 +170,7 @@ export default {
       },
       {
         listDvcd: Constants.LIST_DVCD.HISTORY,
-        listTitle: "History 목록",
+        listTitle: "History",
         iconName: "mdi-history",
       },
     ],
