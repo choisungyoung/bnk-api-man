@@ -16,7 +16,7 @@
 
 <script>
 import Grid from "@/components/Grid";
-import { convertGridDataToJsonData} from "@/util/GridUtils";
+import { convertGridDataToJsonData } from "@/util/GridUtils";
 export default {
   components: {
     Grid,
@@ -24,9 +24,9 @@ export default {
   props: ["data", "height", "dvcd"],
   computed: {
     isEditMode() {
-        let self = this;
-        return self.dvcd === "edit"
-    }
+      let self = this;
+      return self.dvcd === "edit";
+    },
   },
   created() {
     let self = this,
@@ -73,6 +73,14 @@ export default {
           align: "left",
           minWidth: 130,
           editor: editorVal,
+          formatter: function(data) {
+            debugger;
+            if (data.value) {
+              var date = new Date(data.value * 1000);
+              return date.toLocaleString();
+            }
+            return "";
+          },
         },
         {
           header: "HttpOnly",
