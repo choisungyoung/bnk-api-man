@@ -3,6 +3,7 @@
 import { app, protocol, BrowserWindow, session, ipcMain  } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+var path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Scheme must be registered before the app is ready
@@ -29,6 +30,7 @@ async function createWindow() {
     minHeight: 975,
     center:true,
     autoHideMenuBar: true,
+    icon: path.join(__dirname, '/win-ia32-unpacked/honey.png'),
     webPreferences: {
       
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -44,15 +46,31 @@ async function createWindow() {
     }
   })
 
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
-    // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
-  } else {
-    createProtocol('app')
-    // Load the index.html when not in development
-    win.loadURL('app://./index.html')
-  }
+  let loading = new BrowserWindow({show: false, frame: false, 
+    minWidth: 1300,
+    minHeight: 975,})
+
+  loading.once('show', async () => {
+    win.webContents.once('dom-ready', () => {
+      console.log('main loaded')
+      win.show()
+      loading.hide()
+      loading.close()
+    })
+
+    if (process.env.WEBPACK_DEV_SERVER_URL) {
+      // Load the url of the dev server if in development mode
+      await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+      if (!process.env.IS_TEST) win.webContents.openDevTools()
+    } else {
+      createProtocol('app')
+      // Load the index.html when not in development
+      win.loadURL('app://./index.html')
+    }
+  })
+  loading.loadURL('file://' + __dirname + '/bundled/loading.html')  //dist_electron
+  loading.show();
+
 }
 
 // Quit when all windows are closed.
@@ -82,6 +100,8 @@ app.on('ready', async () => {
       console.error('Vue Devtools failed to install:', e.toString())
     }
   }
+
+
   createWindow()
 })
 

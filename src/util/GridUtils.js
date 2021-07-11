@@ -161,8 +161,12 @@ export function CustomButton(props){
 
     el.type = 'button';
     el.className = buttonInfo.class;
-    el.innerText = buttonInfo.innerText;
-    //el.innerHTML = buttonInfo.innerHTML;
+    if(buttonInfo.innerText) {
+        el.innerText = buttonInfo.innerText;
+    }
+    else if(buttonInfo.innerHTML) {
+        el.innerHTML = buttonInfo.innerHTML;
+    }
     el.addEventListener('click', function(){
         buttonInfo.click(props);
     });

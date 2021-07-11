@@ -31,42 +31,68 @@
           </v-col>
           <v-col cols="6" md="4">
             <div align="right">
-              <v-btn
-                x-small
-                icon
-                color="gray"
-                @click="importRequest()"
-                v-show="isRequest"
-                class="mr-3"
-              >
-                <v-icon dark>
-                  mdi-import
-                </v-icon>
-                <input id="fileUpload" type="file" hidden @change="loadFile" />
-              </v-btn>
-              <v-btn
-                x-small
-                icon
-                color="gray"
-                @click="exportRequest()"
-                v-show="isRequest"
-                class="mr-3"
-              >
-                <v-icon dark>
-                  mdi-export
-                </v-icon>
-              </v-btn>
-              <v-btn
-                x-small
-                icon
-                color="gray"
-                @click="createRequest()"
-                v-show="isRequest"
-              >
-                <v-icon dark>
-                  mdi-plus
-                </v-icon>
-              </v-btn>
+              <v-tooltip bottom open-delay="1000">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    x-small
+                    icon
+                    color="gray"
+                    @click="importRequest()"
+                    v-show="isRequest"
+                    class="mr-3"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    <v-icon dark>
+                      mdi-import
+                    </v-icon>
+                    <input
+                      id="fileUpload"
+                      type="file"
+                      hidden
+                      @change="loadFile"
+                    />
+                  </v-btn>
+                </template>
+                <span>Import</span>
+              </v-tooltip>
+              <v-tooltip bottom open-delay="1000">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    x-small
+                    icon
+                    color="gray"
+                    @click="exportRequest()"
+                    v-show="isRequest"
+                    class="mr-3"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    <v-icon dark>
+                      mdi-export
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <span>Export</span>
+              </v-tooltip>
+              <v-tooltip bottom open-delay="1000">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    x-small
+                    icon
+                    color="gray"
+                    @click="createRequest()"
+                    v-show="isRequest"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    <v-icon dark>
+                      mdi-plus
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <span>Add Reqest</span>
+              </v-tooltip>
             </div>
           </v-col>
         </v-row>
@@ -77,91 +103,97 @@
         :search="search"
         :filter="filter"
         :open.sync="open"
-        :active.sync="active"
         open-on-click
-        activatable
         color="success"
-        @update:active="selectRequest"
         ref="treeview"
       >
-      <template slot="label" slot-scope="{ item }">
-        
-        <draggable 
-          class="dragArea list-group"
-          :list="items" 
-          :id="item.id"
-          @start="checkStart"
-          @end="checkEnd"
-          v-bind="dragOptions">
-          <div v-if="item.children">  
-            {{ item.name }}
-          </div>
-          <div v-else> 
-            <v-hover v-slot:default="{ hover }">
-              <div>
-                <v-row no-gutters justify="center" align="center">
-                  
-                  <v-col cols="auto">
-                    <div :class="getMethodClassName(item.method)" >
-                      <span style="font-size: 11px;vertical-align: middle;">
-                        {{ item.method }} &nbsp;
-                      </span>
-                    </div>
-                  </v-col>
-                  <v-col cols="12" sm="6" md="" align-self="center">
-                    
-                    <span
-                      style="width: 170px;display:block;overflow: hidden;text-overflow: ellipsis; white-space: nowrap; "
-                    >
-                      {{ item.name }}
-                    </span>
-                  </v-col>
-                  <v-col cols="auto">
-                    <div align="right" width="30px">
-                      <v-menu bottom left small :offset-y="true">
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-btn icon small v-bind="attrs" v-on="on">
-                            <v-icon v-if="hover">mdi-dots-vertical</v-icon>
-                          </v-btn>
-                        </template>
-
-                        <v-list dense>
-                          <v-list-item
-                            link
-                            icon
-                            small
-                            @click="duplicateRequest(item)"
-                            v-show="isRequest"
+        <template slot="label" slot-scope="{ item }">
+          <draggable
+            class="dragArea list-group"
+            :list="items"
+            :id="item.id"
+            @start="checkStart"
+            @end="checkEnd"
+            v-bind="dragOptions"
+          >
+            <div v-if="item.children">
+              {{ item.name }}
+            </div>
+            <div v-else @click="selectRequest(item)">
+              <v-hover v-slot:default="{ hover }">
+                <div>
+                  <v-row no-gutters justify="center" align="center">
+                    <v-tooltip bottom open-delay="1000" :disabled="isRequest">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-col cols="auto">
+                          <div :class="getMethodClassName(item.method)">
+                            <span
+                              style="font-size: 11px;vertical-align: middle;"
+                              v-bind="!isRequest ? attrs : null"
+                              v-on="!isRequest ? on : null"
+                            >
+                              {{ item.method }} &nbsp;
+                            </span>
+                          </div>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="" align-self="center">
+                          <span
+                            style="width: 170px;display:block;overflow: hidden;text-overflow: ellipsis; white-space: nowrap; "
+                            v-bind="attrs"
+                            v-on="on"
                           >
-                            <v-list-item-icon>
-                              <v-icon small>mdi-content-copy</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>duplicate</v-list-item-title>
-                          </v-list-item>
+                            {{ item.name }}
+                          </span>
+                        </v-col>
+                      </template>
+                      <span>{{ item.requestDtti }}</span>
+                    </v-tooltip>
+                    <v-col cols="auto">
+                      <div align="right" width="30px">
+                        <v-menu bottom left small :offset-y="true">
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon small v-bind="attrs" v-on="on">
+                              <v-icon v-if="hover">mdi-dots-vertical</v-icon>
+                            </v-btn>
+                          </template>
 
-                          <v-list-item
-                            link
-                            icon
-                            small
-                            @click="deleteRequest(item)"
-                          >
-                            <v-list-item-icon>
-                              <v-icon small>mdi-delete</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-content>
-                              <v-list-item-subtitle >delete</v-list-item-subtitle >
-                            </v-list-item-content>
-                          </v-list-item>
-                        </v-list>
-                      </v-menu>
-                    </div>
-                  </v-col>
-                </v-row>
-              </div>
-            </v-hover>
-          </div>
+                          <v-list dense>
+                            <v-list-item
+                              link
+                              icon
+                              small
+                              @click="duplicateRequest(item)"
+                              v-show="isRequest"
+                            >
+                              <v-list-item-icon>
+                                <v-icon small>mdi-content-copy</v-icon>
+                              </v-list-item-icon>
+                              <v-list-item-title>duplicate</v-list-item-title>
+                            </v-list-item>
+
+                            <v-list-item
+                              link
+                              icon
+                              small
+                              @click="deleteRequest(item)"
+                            >
+                              <v-list-item-icon>
+                                <v-icon small>mdi-delete</v-icon>
+                              </v-list-item-icon>
+                              <v-list-item-content>
+                                <v-list-item-title>delete</v-list-item-title>
+                              </v-list-item-content>
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
+              </v-hover>
+            </div>
           </draggable>
-      </template>
+        </template>
       </v-treeview>
     </v-card-text>
   </v-card>
@@ -171,16 +203,17 @@
 import DbAccessUtils from "@/util/DbAccessUtils";
 import EventBus from "@/util/EventBus";
 import Constants from "@/constants";
-import draggable from 'vuedraggable'
+import draggable from "vuedraggable";
 
 export default {
   components: {
-      draggable,
+    draggable,
   },
   props: ["listDvcd", "listTitle"],
   data: () => ({
     items: [],
     active: [],
+    dragItem: [],
     open: [],
     search: "",
     caseSensitive: false,
@@ -196,21 +229,21 @@ export default {
     isRequest() {
       return this.listDvcd === Constants.LIST_DVCD.REQUEST ? true : false;
     },
-    filteItems :{
-      set : function(items) {
+    filteItems: {
+      set: function(items) {
         this.items = items;
       },
-      get : function() {
+      get: function() {
         let self = this;
         return self.getFiltedItems(self.items);
-      }
-    } ,
+      },
+    },
     dragOptions() {
       return {
         animation: 200,
         group: "description",
         disabled: false,
-        ghostClass: "ghost"
+        ghostClass: "ghost",
       };
     },
   },
@@ -232,11 +265,9 @@ export default {
 
   methods: {
     selectRequest(props) {
-      debugger;
-      let id = props[0];
+      let id = props.id;
       let self = this;
-      self.active = [];
-      //self.active.push(props);
+      debugger;
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
         EventBus.$emit("request:initRequestData", id);
       } else if (self.listDvcd == Constants.LIST_DVCD.HISTORY) {
@@ -362,6 +393,7 @@ export default {
     },
     initRequestList() {
       var self = this;
+
       if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
         DbAccessUtils.findAllRequestById().then((res) => {
           self.items = [];
@@ -404,6 +436,7 @@ export default {
               id: row.id,
               name: row.url,
               method: row.method,
+              requestDtti: row.requestDtti,
             });
 
             if (index == array.length - 1) {
@@ -429,7 +462,7 @@ export default {
           item.children = self.getFiltedItems(item.children);
           filtedItmes.push(item);
           continue;
-        } 
+        }
 
         if (item.name.toLowerCase().includes(self.search.toLowerCase())) {
           filtedItmes.push(item);
@@ -437,76 +470,88 @@ export default {
       }
       return filtedItmes;
     },
-    
-    findTreeItem: function (items, id) {
+
+    findTreeItem: function(items, id) {
       if (!items) {
-          return;
+        return;
       }
       for (var i = 0; i < items.length; i++) {
-          var item = items[i];
-          // Test current object
-          if (item.id.toString() === id) {
-              return item;
-          }
-          // Test children recursively
-          const child = this.findTreeItem(item.children, id);
-          if (child) {
-              return child;
-          }
+        var item = items[i];
+        // Test current object
+        if (item.id.toString() === id) {
+          return item;
+        }
+        // Test children recursively
+        const child = this.findTreeItem(item.children, id);
+        if (child) {
+          return child;
+        }
       }
     },
-    checkStart: function (evt) {
-        var self = this;
-        self.active = [];
-        self.active.push(self.findTreeItem(self.items, evt.from.id));
-        self.drag = true;
+    checkStart: function(evt) {
+      var self = this;
+      self.dragItem = [];
+      self.dragItem.push(self.findTreeItem(self.items, evt.from.id));
+      self.drag = true;
     },
-    checkEnd: function (evt) {
-        var self = this;
-        
-        if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
-          var itemSelected = self.active[0];
-          var fromParent = itemSelected.parentId ? self.findTreeItem(self.items, itemSelected.parentId) : null;
-          
-          var toItem = self.findTreeItem(self.items, evt.to.id);
-          var toParent = toItem.parentId ? self.findTreeItem(self.items, itemSelected.parentId) : null;
-          
-          var objFrom = fromParent ? fromParent.children : self.items;
-          var objTo = toParent ? toParent.children : self.items;
+    checkEnd: function(evt) {
+      var self = this;
+      debugger;
+      if (self.listDvcd == Constants.LIST_DVCD.REQUEST) {
+        var itemSelected = self.dragItem[0];
+        var fromParent = itemSelected.parentId
+          ? self.findTreeItem(self.items, itemSelected.parentId)
+          : null;
 
-          objFrom.splice(objFrom.indexOf(itemSelected), 1);
-          if (evt.newIndex == 1) {
-            // 밑으로 드래그 end되었을 경우
-            objTo.splice(objTo.indexOf(toItem)+1,0,itemSelected);
-          } else {
-            objTo.splice(objTo.indexOf(toItem),0,itemSelected);
-          }
+        var toItem = self.findTreeItem(self.items, evt.to.id);
+        var toParent = toItem.parentId
+          ? self.findTreeItem(self.items, itemSelected.parentId)
+          : null;
 
-          // 목록 정렬 저장 (Tree 고려 X)
-          var index = 0;
-          for (let item of self.items) {
-            item.sort = index++;
-            DbAccessUtils.updateRequestSort(item);
-          }
+        var objFrom = fromParent ? fromParent.children : self.items;
+        var objTo = toParent ? toParent.children : self.items;
 
-          this.$toasted.global.successToast();
+        objFrom.splice(objFrom.indexOf(itemSelected), 1);
+        if (evt.newIndex == 1) {
+          // 밑으로 드래그 end되었을 경우
+          objTo.splice(objTo.indexOf(toItem) + 1, 0, itemSelected);
+        } else {
+          objTo.splice(objTo.indexOf(toItem), 0, itemSelected);
         }
-        
-        self.drag = false;
-        return false;
+
+        // 목록 정렬 저장 (Tree 고려 X)
+        var index = 0;
+        for (let item of self.items) {
+          item.sort = index++;
+          DbAccessUtils.updateRequestSort(item);
+        }
+
+        this.$toasted.global.successToast();
+      }
+
+      self.drag = false;
+      return false;
     },
-    
+
     getMethodClassName(method) {
       let className = "";
       if (Constants.REQUEST_METHOD.GET == method) {
-        className = "yellow"
+        className = "yellow";
       } else if (Constants.REQUEST_METHOD.POST == method) {
-        className = "green"
+        className = "green";
       } else {
         className = "grey";
       }
       return className + "--text";
-    }
+    },
+
+    remvoeAllActiveClassName() {
+      var elements = document.getElementsByClassName("v-treeview-node--active");
+      for (let element of elements) {
+        element.classList.remove("v-treeview-node--active");
+        element.classList.remove("success--text");
+      }
+    },
   },
 };
 </script>

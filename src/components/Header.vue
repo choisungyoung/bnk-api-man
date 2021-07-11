@@ -30,8 +30,8 @@ export default {
   computed: {
     isEditMode() {
       let self = this;
-      return self.dvcd === "edit"
-    }
+      return self.dvcd === "edit";
+    },
   },
   created() {
     let self = this,
@@ -74,13 +74,14 @@ export default {
         {
           header: "DELETE",
           name: "delete",
-          align: "left",
+          align: "center",
           width: 100,
           hidden: self.dvcd != "edit",
           renderer: {
             type: CustomButton,
             buttonInfo: {
-              innerText: "삭제",
+              //innerText: "삭제",
+              innerHTML: '<i class="mdi mdi-delete" style="align:center;"></i>',
               click: self.removeData,
             },
           },
