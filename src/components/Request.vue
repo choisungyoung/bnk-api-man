@@ -74,8 +74,8 @@
         </v-row>
       </v-col>
 
-      <v-col cols="auto" class="shrink pa-3">
-        <v-card elevation="2" height="300px">
+      <v-col cols="auto" class="shrink pa-3 pt-0">
+        <v-card elevation="2" height="280px">
           <v-tabs v-model="requestTab" color="success">
             <v-tab
               v-for="item in requestTabs"
@@ -114,26 +114,26 @@
 
           <v-tabs-items v-model="requestTab">
             <v-tab-item eager>
-              <v-card flat max-height="250px">
+              <v-card flat max-height="230px">
                 <Header
                   ref="requestHeader"
                   :data="requestHeader"
-                  :height="180"
+                  :height="160"
                   :dvcd="'edit'"
                 />
               </v-card>
             </v-tab-item>
             <v-tab-item eager>
-              <v-card flat>
-                <Body ref="requestBody" v-model="requestBody" :height="180" :dvcd="'edit'"/>
+              <v-card flat max-height="230px">
+                <Body ref="requestBody" v-model="requestBody" :height="200" :dvcd="'edit'"/>
               </v-card>
             </v-tab-item>
             <v-tab-item eager>
-              <v-card flat max-height="250px">
+              <v-card flat max-height="230px">
                 <Parameter
                   ref="requestParameter"
                   :data="requestParameter"
-                  :height="180"
+                  :height="160"
                   :dvcd="'edit'"
                 />
               </v-card>
@@ -165,7 +165,7 @@
           <v-tabs-items v-model="responseTab">
             <v-tab-item eager>
               <v-card flat>
-                <Body ref="responseBody" v-model="responseBody" :height="230" />
+                <Body ref="responseBody" v-model="responseBody" :height="280" />
               </v-card>
             </v-tab-item>
             <v-tab-item eager>
@@ -173,7 +173,7 @@
                 <Cookie
                   ref="responseCookie"
                   :data="responseCookie"
-                  :height="400"
+                  :height="220"
               /></v-card>
             </v-tab-item>
             <v-tab-item eager>
@@ -181,7 +181,7 @@
                 <Header
                   ref="responseHeader"
                   v-model="responseHeader"
-                  :height="400"
+                  :height="220"
                 />
               </v-card>
             </v-tab-item>
@@ -508,11 +508,11 @@ export default {
       refs.requestParameter.setGridData(request.requestParameter);
       refs.requestHeader.setGridData(request.requestHeader);
       refs.requestBody.setBody(request.requestBody);
+      refs.requestBody.clearBodyMessage();
 
       refs.responseHeader.clearData();
       refs.responseCookie.clearData();
       refs.responseBody.setBody({});
-
       self.responseStatus = "0";
       self.responseStatusText = "";
       self.responseTime = "0";

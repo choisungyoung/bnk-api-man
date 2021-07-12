@@ -14,12 +14,7 @@ module.exports = {
           extraFiles: [
             {
                 "from": "src/assets",
-                "to": "",
-                "filter": ["**/*"]
-            },
-            {
-                "from": "public",
-                "to": "public",
+                "to": "build",
                 "filter": ["**/*"]
             }
           ]

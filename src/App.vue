@@ -16,7 +16,11 @@
           class="d-block text-center mx-auto mt-4"
           color="grey darken-1"
           size="36"
-        ></v-avatar>
+        >
+        <v-icon dark>
+          mdi-account-circle
+        </v-icon>
+      </v-avatar>
 
         <v-divider class="mx-3 my-5"></v-divider>
         <v-btn-toggle

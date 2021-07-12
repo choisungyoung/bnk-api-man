@@ -26,11 +26,11 @@ ipcMain.on('getCookies', async (event, url) => {
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
-    minWidth: 1300,
-    minHeight: 975,
+    width: 1300,
+    height: 833,
     center:true,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, '/win-ia32-unpacked/honey.png'),
+    resizable :false,
     webPreferences: {
       
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -46,9 +46,13 @@ async function createWindow() {
     }
   })
 
-  let loading = new BrowserWindow({show: false, frame: false, 
-    minWidth: 1300,
-    minHeight: 975,})
+  let loading = new BrowserWindow({
+    show: false, 
+    frame: false, 
+    resizable :false,
+    width: 1300,
+    height: 833,
+  })
 
   loading.once('show', async () => {
     win.webContents.once('dom-ready', () => {
@@ -68,7 +72,7 @@ async function createWindow() {
       win.loadURL('app://./index.html')
     }
   })
-  loading.loadURL('file://' + __dirname + '/bundled/loading.html')  //dist_electron
+  loading.loadURL('file://' + __dirname + '/loading.html')  //dist_electron
   loading.show();
 
 }

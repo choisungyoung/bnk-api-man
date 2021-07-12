@@ -58,7 +58,12 @@ export default {
       return this.dvcd == "edit";
     },
   },
-  mounted() {},
+  mounted() {
+    let self = this;
+    self.$refs.body.$el.style = "min-height: "+self.height+"px;max-height: "+self.height+"px;overflow-y: auto;";
+    console.log("body", self.$refs.body);
+    debugger;
+  },
   methods: {
     setBody(value) {
       this.body = JSON.stringify(value, null, 4);
@@ -73,6 +78,7 @@ export default {
     myInput(value) {
       this.$emit("input", value);
     },
+    
     highlighter(code) {
       return highlight(code, languages.json); // languages.<insert language> to return html with markup
     },
@@ -93,11 +99,15 @@ export default {
         } catch (e) {
           if (self.dvcd === "edit") {
             self.bodyMessage = "JSON형식이 아닙니다.";
-            body.$el.style.border = "1px solid red";
+            //body.$el.style.border = "1px solid red";
           }
         }
       }, 1500);
     },
+    clearBodyMessage() {
+      let self = this;
+      self.bodyMessage = "";
+    }
   },
 };
 </script>
