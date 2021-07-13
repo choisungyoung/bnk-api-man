@@ -52,6 +52,7 @@ async function createWindow() {
     resizable :false,
     width: 1300,
     height: 833,
+    parent: win,
   })
 
   loading.once('show', async () => {
